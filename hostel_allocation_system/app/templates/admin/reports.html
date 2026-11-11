@@ -1,0 +1,102 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Institutional Reports & Analytics{% endblock %}
+{% block page_title %}Reports & Analytics Center{% endblock %}
+{% block page_subtitle %}Generate formal institutional reports, occupancy summaries, and export CSV spreadsheets{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="content-panel h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-file-earmark-spreadsheet fs-4 text-warning" style="color: var(--accent-bronze) !important;"></i>
+          <h3 class="h6 fw-bold mb-0">Occupancy & Capacity Report</h3>
+        </div>
+        <p class="text-muted small">Comprehensive hall-by-hall breakdown of room count, capacity, occupied beds, and occupancy rates.</p>
+      </div>
+      <a href="{{ url_for('admin.export_csv', report_type='occupancy') }}" class="btn-custom btn-bronze btn-sm-custom justify-content-center">
+        <i class="bi bi-download"></i> Download Occupancy CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="content-panel h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-people fs-4 text-warning" style="color: var(--accent-bronze) !important;"></i>
+          <h3 class="h6 fw-bold mb-0">Student Allocation Roster</h3>
+        </div>
+        <p class="text-muted small">Roster of all enrolled scholars, roll numbers, allocated rooms, check-in timestamps, and contact data.</p>
+      </div>
+      <a href="{{ url_for('admin.export_csv', report_type='students') }}" class="btn-custom btn-charcoal btn-sm-custom justify-content-center">
+        <i class="bi bi-download"></i> Download Student Roster CSV
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="content-panel h-100 d-flex flex-column justify-content-between">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="bi bi-door-open fs-4 text-warning" style="color: var(--accent-bronze) !important;"></i>
+          <h3 class="h6 fw-bold mb-0">Room Inventory Report</h3>
+        </div>
+        <p class="text-muted small">Complete inventory of every room number, configuration, bed count, and maintenance status across all blocks.</p>
+      </div>
+      <a href="{{ url_for('admin.export_csv', report_type='rooms') }}" class="btn-custom btn-outline-custom btn-sm-custom justify-content-center">
+        <i class="bi bi-download"></i> Download Room Inventory CSV
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- On-Screen Statistical Summary Table -->
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-table text-warning" style="color: var(--accent-bronze) !important;"></i> Live Hostel Capacity Summary</h2>
+    <button onclick="window.print()" class="btn-custom btn-outline-custom btn-sm-custom">
+      <i class="bi bi-printer"></i> Print Summary Report
+    </button>
+  </div>
+
+  <div class="table-responsive-wrapper">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Hostel Name</th>
+          <th>Type</th>
+          <th>Total Rooms</th>
+          <th>Design Capacity</th>
+          <th>Occupied Beds</th>
+          <th>Available Beds</th>
+          <th>Occupancy Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hostels %}
+          {% set rate = ((h.total_occupied / h.total_capacity) * 100)|round(1) if h.total_capacity > 0 else 0 %}
+          <tr>
+            <td class="fw-bold">{{ h.hostel_name }}</td>
+            <td>{{ h.hostel_type }}</td>
+            <td>{{ h.total_rooms }}</td>
+            <td>{{ h.total_capacity }} Beds</td>
+            <td>{{ h.total_occupied }}</td>
+            <td><span class="custom-badge badge-available">{{ h.free_beds }} Free</span></td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height: 6px;">
+                  <div class="progress-bar" style="width: {{ rate }}%; background-color: var(--accent-bronze);"></div>
+                </div>
+                <span class="small fw-semibold">{{ rate }}%</span>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+

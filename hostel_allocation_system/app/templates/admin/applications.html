@@ -1,0 +1,131 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Manage Applications{% endblock %}
+{% block page_title %}Accommodation Applications{% endblock %}
+{% block page_subtitle %}Review incoming accommodation requests, approve/reject quotas, and inspect remarks{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <!-- Filter Toolbar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <form method="GET" action="{{ url_for('admin.applications') }}" class="d-flex flex-wrap gap-2 align-items-center">
+      <select name="status" class="form-select-custom" style="width: auto;" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        {% for s in ['Pending', 'Approved', 'Rejected', 'Allocated', 'Cancelled'] %}
+          <option value="{{ s }}" {{ 'selected' if selected_status == s else '' }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="hostel_id" class="form-select-custom" style="width: auto;" onchange="this.form.submit()">
+        <option value="">All Hostels</option>
+        {% for h in hostels %}
+          <option value="{{ h.id }}" {{ 'selected' if selected_hostel == h.id else '' }}>{{ h.hostel_name }}</option>
+        {% endfor %}
+      </select>
+
+      <a href="{{ url_for('admin.applications') }}" class="btn-custom btn-outline-custom btn-sm-custom">Reset</a>
+    </form>
+
+    <a href="{{ url_for('admin.allocations') }}" class="btn-custom btn-bronze btn-sm-custom">
+      <i class="bi bi-key"></i> Go to Room Allocation
+    </a>
+  </div>
+
+  {% if applications %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>App ID</th>
+            <th>Student Name</th>
+            <th>Roll No</th>
+            <th>Gender</th>
+            <th>Preferred Hostel</th>
+            <th>Room Type</th>
+            <th>Applied Date</th>
+            <th>Status</th>
+            <th>Remarks</th>
+            <th>Decision / Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in applications %}
+            <tr>
+              <td class="fw-semibold">#APP-{{ a.id }}</td>
+              <td>
+                <span class="fw-bold">{{ a.student.user.name }}</span>
+                <small class="text-muted d-block">{{ a.student.department }} &bull; Yr {{ a.student.academic_year }}</small>
+              </td>
+              <td>{{ a.student.registration_number }}</td>
+              <td>{{ a.student.gender }}</td>
+              <td>{{ a.preferred_hostel.hostel_name }}</td>
+              <td>{{ a.preferred_room_type }}</td>
+              <td>{{ a.application_date.strftime('%b %d, %Y') }}</td>
+              <td>{{ a.status|status_badge|safe }}</td>
+              <td style="max-width: 180px;">
+                <span class="text-muted small">{{ a.admin_remarks or 'None' }}</span>
+              </td>
+              <td>
+                {% if a.status == 'Pending' %}
+                  <div class="d-flex gap-1">
+                    <button class="btn-custom btn-bronze btn-sm-custom py-1 px-2" data-bs-toggle="modal" data-bs-target="#decisionModal{{ a.id }}">
+                      Review
+                    </button>
+                  </div>
+                {% elif a.status == 'Approved' %}
+                  <a href="{{ url_for('admin.allocations') }}" class="btn-custom btn-outline-custom btn-sm-custom py-1 px-2">
+                    Allocate Room
+                  </a>
+                {% else %}
+                  <span class="text-muted small">&mdash;</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            <!-- Decision Modal -->
+            <div class="modal fade" id="decisionModal{{ a.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: var(--radius-md);">
+                  <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title fw-bold">Review Application #APP-{{ a.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <form method="POST" action="{{ url_for('admin.decide_application', app_id=a.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="modal-body p-4">
+                      <p class="text-muted small mb-3">
+                        Candidate: <strong>{{ a.student.user.name }}</strong> ({{ a.student.registration_number }})<br>
+                        Preference: <strong>{{ a.preferred_hostel.hostel_name }} ({{ a.preferred_room_type }})</strong>
+                      </p>
+
+                      <div class="mb-3">
+                        <label class="form-label-custom">Administrative Decision</label>
+                        <select name="status" class="form-select-custom">
+                          <option value="Approved">Approve Application</option>
+                          <option value="Rejected">Reject Application</option>
+                        </select>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label-custom">Remarks / Notification Note</label>
+                        <textarea name="admin_remarks" class="form-control-custom" rows="3" placeholder="Provide verification remarks or reason for rejection..."></textarea>
+                      </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                      <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn-custom btn-bronze">Confirm Decision</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No applications match the selected criteria.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

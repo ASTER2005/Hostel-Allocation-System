@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Hostel Allocation and Management System{% endblock %} - {{ college_name }}</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom Design System Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+  <!-- Authenticated Application Layout with Sidebar -->
+  <div class="app-wrapper">
+    
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <i class="bi bi-buildings-fill text-warning" style="color: var(--accent-bronze) !important;"></i>
+          <div>
+            <div>Hostel Management</div>
+            <small>{{ current_user.role }} portal</small>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        {% if current_user.role == 'admin' %}
+          <div class="nav-section-title">Institutional Overview</div>
+          <a href="{{ url_for('admin.overview') }}" class="{{ 'active' if request.endpoint == 'admin.overview' else '' }}">
+            <i class="bi bi-grid-1x2"></i> Overview
+          </a>
+          <a href="{{ url_for('admin.sheets') }}" class="{{ 'active' if request.endpoint == 'admin.sheets' else '' }}">
+            <i class="bi bi-table"></i> Live Database Sheet
+          </a>
+
+          <div class="nav-section-title">Accommodations</div>
+          <a href="{{ url_for('admin.hostels') }}" class="{{ 'active' if request.endpoint == 'admin.hostels' else '' }}">
+            <i class="bi bi-building"></i> Hostels
+          </a>
+          <a href="{{ url_for('admin.rooms') }}" class="{{ 'active' if request.endpoint == 'admin.rooms' else '' }}">
+            <i class="bi bi-door-open"></i> Rooms & Beds
+          </a>
+          <a href="{{ url_for('admin.allocations') }}" class="{{ 'active' if request.endpoint == 'admin.allocations' else '' }}">
+            <i class="bi bi-key"></i> Room Allocation
+          </a>
+
+          <div class="nav-section-title">Admissions & Students</div>
+          <a href="{{ url_for('admin.applications') }}" class="{{ 'active' if request.endpoint == 'admin.applications' else '' }}">
+            <i class="bi bi-file-earmark-text"></i> Applications
+          </a>
+          <a href="{{ url_for('admin.students') }}" class="{{ 'active' if request.endpoint == 'admin.students' else '' }}">
+            <i class="bi bi-people"></i> Students
+          </a>
+          <a href="{{ url_for('admin.wardens') }}" class="{{ 'active' if request.endpoint == 'admin.wardens' else '' }}">
+            <i class="bi bi-person-badge"></i> Wardens
+          </a>
+
+          <div class="nav-section-title">Administration</div>
+          <a href="{{ url_for('admin.complaints') }}" class="{{ 'active' if request.endpoint == 'admin.complaints' else '' }}">
+            <i class="bi bi-chat-left-dots"></i> Complaints
+          </a>
+          <a href="{{ url_for('admin.announcements') }}" class="{{ 'active' if request.endpoint == 'admin.announcements' else '' }}">
+            <i class="bi bi-megaphone"></i> Announcements
+          </a>
+          <a href="{{ url_for('admin.reports') }}" class="{{ 'active' if request.endpoint == 'admin.reports' else '' }}">
+            <i class="bi bi-bar-chart"></i> Reports
+          </a>
+
+        {% elif current_user.role == 'warden' %}
+          <div class="nav-section-title">Warden Supervision</div>
+          <a href="{{ url_for('warden.overview') }}" class="{{ 'active' if request.endpoint == 'warden.overview' else '' }}">
+            <i class="bi bi-grid-1x2"></i> Overview
+          </a>
+          <a href="{{ url_for('warden.sheets') }}" class="{{ 'active' if request.endpoint == 'warden.sheets' else '' }}">
+            <i class="bi bi-table"></i> Hostel Live Sheet
+          </a>
+          <a href="{{ url_for('warden.my_hostel') }}" class="{{ 'active' if request.endpoint == 'warden.my_hostel' else '' }}">
+            <i class="bi bi-building"></i> My Assigned Hostel
+          </a>
+          <a href="{{ url_for('warden.occupancy') }}" class="{{ 'active' if request.endpoint == 'warden.occupancy' else '' }}">
+            <i class="bi bi-door-open"></i> Room Occupancy
+          </a>
+          <a href="{{ url_for('warden.students') }}" class="{{ 'active' if request.endpoint == 'warden.students' else '' }}">
+            <i class="bi bi-people"></i> Resident Scholars
+          </a>
+          <a href="{{ url_for('warden.checkin') }}" class="{{ 'active' if request.endpoint == 'warden.checkin' else '' }}">
+            <i class="bi bi-box-arrow-in-right"></i> Check-in / Out
+          </a>
+          <a href="{{ url_for('warden.complaints') }}" class="{{ 'active' if request.endpoint == 'warden.complaints' else '' }}">
+            <i class="bi bi-chat-left-dots"></i> Complaints
+          </a>
+          <a href="{{ url_for('warden.announcements') }}" class="{{ 'active' if request.endpoint == 'warden.announcements' else '' }}">
+            <i class="bi bi-megaphone"></i> Announcements
+          </a>
+
+        {% else %}
+          <!-- Student Nav -->
+          <div class="nav-section-title">Student Portal</div>
+          <a href="{{ url_for('student.overview') }}" class="{{ 'active' if request.endpoint == 'student.overview' else '' }}">
+            <i class="bi bi-grid-1x2"></i> Overview
+          </a>
+          <a href="{{ url_for('student.profile') }}" class="{{ 'active' if request.endpoint == 'student.profile' else '' }}">
+            <i class="bi bi-person"></i> My Profile
+          </a>
+          <a href="{{ url_for('student.apply') }}" class="{{ 'active' if request.endpoint == 'student.apply' else '' }}">
+            <i class="bi bi-pencil-square"></i> Apply for Hostel
+          </a>
+          <a href="{{ url_for('student.applications') }}" class="{{ 'active' if request.endpoint == 'student.applications' else '' }}">
+            <i class="bi bi-file-earmark-check"></i> My Applications
+          </a>
+          <a href="{{ url_for('student.room') }}" class="{{ 'active' if request.endpoint == 'student.room' else '' }}">
+            <i class="bi bi-door-open"></i> My Room Details
+          </a>
+          <a href="{{ url_for('student.complaints') }}" class="{{ 'active' if request.endpoint == 'student.complaints' else '' }}">
+            <i class="bi bi-chat-left-dots"></i> Complaints
+          </a>
+          <a href="{{ url_for('student.announcements') }}" class="{{ 'active' if request.endpoint == 'student.announcements' else '' }}">
+            <i class="bi bi-megaphone"></i> Announcements
+          </a>
+        {% endif %}
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="btn-custom btn-outline-custom w-100 justify-content-center text-white" style="border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04);">
+          <i class="bi bi-box-arrow-right"></i> Sign Out
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="sidebar-toggle-btn" type="button" aria-label="Toggle Navigation">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="topbar-title">
+            <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="breadcrumb-sub">{% block page_subtitle %}{{ college_name }}{% endblock %}</div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <div class="user-profile-badge">
+            <div class="user-avatar">{{ current_user.name[:1] }}</div>
+            <div>
+              <div class="fw-semibold lh-1">{{ current_user.name }}</div>
+              <small class="text-muted text-uppercase" style="font-size: 10px;">{{ current_user.role }}</small>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert" style="border-radius: var(--radius-sm);">
+                <i class="bi bi-info-circle me-1"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+{% else %}
+  <!-- Public Layout (Landing, Login, Registration, About) -->
+  <header style="background: #FFFFFF; border-bottom: 1px solid var(--border-color); padding: 14px 32px; position: sticky; top: 0; z-index: 1030;">
+    <div class="d-flex align-items-center justify-content-between max-w-1200 mx-auto" style="max-width: 1200px;">
+      <a href="{{ url_for('auth.landing') }}" class="d-flex align-items-center gap-2 text-decoration-none">
+        <div style="width: 32px; height: 32px; background: var(--sidebar-bg); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--accent-bronze);">
+          <i class="bi bi-buildings-fill fs-5"></i>
+        </div>
+        <div>
+          <div class="fw-bold" style="color: var(--text-main); font-size: 15px; letter-spacing: -0.01em;">Residential Services</div>
+          <small class="text-muted" style="font-size: 11px;">{{ college_name }}</small>
+        </div>
+      </a>
+
+      <nav class="d-flex align-items-center gap-3">
+        <a href="{{ url_for('auth.landing') }}" class="text-muted fw-medium fs-6 text-decoration-none px-2">Home</a>
+        <a href="{{ url_for('auth.about') }}" class="text-muted fw-medium fs-6 text-decoration-none px-2">About & Rules</a>
+        <a href="{{ url_for('auth.register') }}" class="btn-custom btn-outline-custom btn-sm-custom">Student Register</a>
+        <a href="{{ url_for('auth.login') }}" class="btn-custom btn-bronze btn-sm-custom">Sign In</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Flash Alert Messages for Public Views -->
+    <div class="max-w-1200 mx-auto mt-3 px-3" style="max-width: 1200px;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block public_content %}{% endblock %}
+  </main>
+
+  <footer style="background: var(--sidebar-bg); color: var(--sidebar-text); padding: 48px 32px 32px; margin-top: 64px; border-top: 1px solid rgba(255,255,255,0.05);">
+    <div style="max-width: 1200px; margin: 0 auto;" class="row gy-4">
+      <div class="col-md-5">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-buildings-fill fs-4" style="color: var(--accent-bronze);"></i>
+          <span class="fs-5 fw-bold text-white">Hostel Allocation & Management</span>
+        </div>
+        <p style="color: #92998f; font-size: 13px; max-width: 380px;">
+          Comprehensive collegiate residential management platform supporting room allocation, live occupancy analytics, maintenance ticketing, and transparent hostel governance.
+        </p>
+      </div>
+
+      <div class="col-md-3">
+        <h6 class="text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.1em; margin-bottom: 14px;">Quick Links</h6>
+        <ul class="list-unstyled d-flex flex-direction-column gap-2" style="font-size: 13px;">
+          <li><a href="{{ url_for('auth.landing') }}" class="text-decoration-none" style="color: #a4aaa0;">Campus Hostels</a></li>
+          <li><a href="{{ url_for('auth.about') }}" class="text-decoration-none" style="color: #a4aaa0;">Allocation Regulations</a></li>
+          <li><a href="{{ url_for('auth.register') }}" class="text-decoration-none" style="color: #a4aaa0;">Scholar Registration</a></li>
+          <li><a href="{{ url_for('auth.login') }}" class="text-decoration-none" style="color: #a4aaa0;">Portal Sign In</a></li>
+        </ul>
+      </div>
+
+      <div class="col-md-4">
+        <h6 class="text-white text-uppercase" style="font-size: 11px; letter-spacing: 0.1em; margin-bottom: 14px;">Hostel Administration Office</h6>
+        <p style="color: #92998f; font-size: 13px; margin-bottom: 6px;">
+          <i class="bi bi-geo-alt me-2"></i> Central Administrative Complex, Gate 1<br>
+          <i class="bi bi-telephone me-2"></i> +91 (080) 2855-4300 / Ext 412<br>
+          <i class="bi bi-envelope me-2"></i> residential@college.edu
+        </p>
+        <div class="mt-3">
+          <span class="custom-badge badge-neutral" style="background: #2c3532; color: #cfd2c9; border-color: #3b4743;">
+            Academic Year {{ current_year }} - Active Term
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center pt-4 mt-4" style="border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: #6a7167;">
+      &copy; {{ current_year }} {{ college_name }}. Individual Academic Software Engineering Capstone Project.
+    </div>
+  </footer>
+{% endif %}
+
+<div id="toast-container"></div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<!-- Three.js & OrbitControls -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- Application Scripts -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/three_viewer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/live_sheet.js') }}"></script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
+

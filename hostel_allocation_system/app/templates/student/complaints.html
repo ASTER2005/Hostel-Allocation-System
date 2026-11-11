@@ -1,0 +1,102 @@
+{% extends "shared/base.html" %}
+
+{% block title %}My Complaints & Maintenance Tickets{% endblock %}
+{% block page_title %}Grievances & Maintenance{% endblock %}
+{% block page_subtitle %}Report facilities issues, track repair tickets and review warden updates{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-chat-left-dots text-warning" style="color: var(--accent-bronze) !important;"></i> My Complaint History</h2>
+    <button class="btn-custom btn-bronze btn-sm-custom" data-bs-toggle="modal" data-bs-target="#newComplaintModal">
+      <i class="bi bi-plus-lg"></i> Lodge New Complaint
+    </button>
+  </div>
+
+  {% if complaints %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Ticket #</th>
+            <th>Subject</th>
+            <th>Hostel</th>
+            <th>Date Filed</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Warden Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in complaints %}
+            <tr>
+              <td class="fw-semibold">#TKT-{{ c.id }}</td>
+              <td class="fw-semibold">{{ c.complaint_title }}</td>
+              <td>{{ c.hostel.hostel_name if c.hostel else 'General' }}</td>
+              <td>{{ c.complaint_date.strftime('%B %d, %Y') }}</td>
+              <td>{{ c.status|status_badge|safe }}</td>
+              <td style="max-width: 250px;">
+                <span class="text-secondary small">{{ c.description }}</span>
+              </td>
+              <td style="max-width: 200px;">
+                {% if c.warden_remarks %}
+                  <span class="text-dark small">{{ c.warden_remarks }}</span>
+                {% else %}
+                  <span class="text-muted small">Pending review</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-check-circle text-muted fs-1 mb-2"></i>
+      <h3 class="h6 fw-bold">No Active Complaints</h3>
+      <p class="text-muted small mb-3">You have not submitted any maintenance or grievance tickets.</p>
+      <button class="btn-custom btn-bronze btn-sm-custom" data-bs-toggle="modal" data-bs-target="#newComplaintModal">
+        <i class="bi bi-plus-lg"></i> Lodge Ticket
+      </button>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Modal: Lodge Complaint -->
+<div class="modal fade" id="newComplaintModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--radius-md);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+        <h5 class="modal-title fw-bold">Lodge Maintenance / Grievance Ticket</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="POST" action="{{ url_for('student.complaints') }}">
+        {{ form.hidden_tag() }}
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label-custom">Subject / Issue Title</label>
+            {{ form.complaint_title(class="form-control-custom", placeholder="e.g. Washroom tap leaking, Wi-Fi not working") }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label-custom">Related Hostel (Optional)</label>
+            {{ form.hostel_id(class="form-select-custom") }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label-custom">Detailed Description</label>
+            {{ form.description(class="form-control-custom", rows="4", placeholder="Specify exact room or floor location and problem details...") }}
+          </div>
+        </div>
+
+        <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-custom btn-bronze">Submit Complaint</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

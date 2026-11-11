@@ -1,0 +1,195 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+{% block page_title %}Student Overview{% endblock %}
+{% block page_subtitle %}Welcome, {{ student.user.name }} ({{ student.registration_number }}){% endblock %}
+
+{% block content %}
+<!-- Metric Cards -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-label">
+      <span>Application Status</span>
+      <i class="bi bi-file-earmark-check"></i>
+    </div>
+    <div class="metric-val" style="font-size: 20px;">
+      {% if active_app %}
+        {{ active_app.status|status_badge|safe }}
+      {% elif latest_app %}
+        {{ latest_app.status|status_badge|safe }}
+      {% else %}
+        <span class="custom-badge badge-neutral">Not Applied</span>
+      {% endif %}
+    </div>
+    <div class="metric-sub">
+      {% if active_app %}
+        {{ active_app.preferred_hostel.hostel_name }}
+      {% else %}
+        No active requests
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <span>Allocated Room</span>
+      <i class="bi bi-door-open"></i>
+    </div>
+    <div class="metric-val" style="font-size: 20px;">
+      {% if active_alloc and active_alloc.room %}
+        {{ active_alloc.room.room_number }}
+      {% else %}
+        <span class="text-muted" style="font-size: 16px;">Unassigned</span>
+      {% endif %}
+    </div>
+    <div class="metric-sub">
+      {% if active_alloc and active_alloc.room %}
+        {{ active_alloc.room.hostel.hostel_name }} ({{ active_alloc.status }})
+      {% else %}
+        Awaiting allocation
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <span>Open Complaints</span>
+      <i class="bi bi-chat-left-dots"></i>
+    </div>
+    <div class="metric-val">{{ active_complaints_count }}</div>
+    <div class="metric-sub">Tickets in progress</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">
+      <span>Academic Profile</span>
+      <i class="bi bi-mortarboard"></i>
+    </div>
+    <div class="metric-val" style="font-size: 18px;">Year {{ student.academic_year }}</div>
+    <div class="metric-sub">{{ student.department }}</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Current Accommodation Status & Quick Actions -->
+  <div class="col-lg-7">
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-house-check text-warning" style="color: var(--accent-bronze) !important;"></i> My Residential Status</h2>
+        {% if active_alloc and active_alloc.room %}
+          <a href="{{ url_for('student.room') }}" class="btn-custom btn-outline-custom btn-sm-custom">View Room 3D</a>
+        {% elif not active_app %}
+          <a href="{{ url_for('student.apply') }}" class="btn-custom btn-bronze btn-sm-custom">Apply Now</a>
+        {% endif %}
+      </div>
+
+      {% if active_alloc and active_alloc.room %}
+        <div class="p-3 border rounded mb-3 bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 class="h6 fw-bold mb-0">{{ active_alloc.room.hostel.hostel_name }} — Room {{ active_alloc.room.room_number }}</h3>
+            {{ active_alloc.status|status_badge|safe }}
+          </div>
+          <p class="text-muted small mb-2">
+            <strong>Room Type:</strong> {{ active_alloc.room.room_type }} Sharing | <strong>Capacity:</strong> {{ active_alloc.room.capacity }} Beds | 
+            <strong>Allotted Date:</strong> {{ active_alloc.allocation_date.strftime('%B %d, %Y') }}
+          </p>
+          <div class="d-flex gap-2 mt-3">
+            <a href="{{ url_for('student.room') }}" class="btn-custom btn-charcoal btn-sm-custom">
+              <i class="bi bi-door-open"></i> Full Room Details & Roommates
+            </a>
+            <a href="{{ url_for('student.complaints') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+              <i class="bi bi-wrench"></i> Lodge Maintenance Ticket
+            </a>
+          </div>
+        </div>
+      {% elif active_app %}
+        <div class="p-3 border rounded mb-3 bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 class="h6 fw-bold mb-0">Application in Progress</h3>
+            {{ active_app.status|status_badge|safe }}
+          </div>
+          <p class="text-muted small mb-2">
+            <strong>Preferred Hall:</strong> {{ active_app.preferred_hostel.hostel_name }}<br>
+            <strong>Preferred Type:</strong> {{ active_app.preferred_room_type }}<br>
+            <strong>Submitted:</strong> {{ active_app.application_date.strftime('%B %d, %Y') }}
+          </p>
+          {% if active_app.admin_remarks %}
+            <div class="small p-2 bg-white rounded border">
+              <strong>Admin Note:</strong> {{ active_app.admin_remarks }}
+            </div>
+          {% endif %}
+        </div>
+      {% else %}
+        <div class="text-center py-4">
+          <i class="bi bi-house-door text-muted fs-1 mb-2"></i>
+          <h4 class="h6 fw-bold">No Active Hostel Allotment</h4>
+          <p class="text-muted small mb-3">You currently do not have an active hostel accommodation. Submit an application for available college halls.</p>
+          <a href="{{ url_for('student.apply') }}" class="btn-custom btn-bronze btn-sm-custom">
+            <i class="bi bi-plus-lg"></i> Submit Accommodation Application
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Quick Navigation Hub -->
+    <div class="row g-3">
+      <div class="col-sm-6">
+        <a href="{{ url_for('student.applications') }}" class="content-panel text-decoration-none d-block p-3 hover-lift">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 40px; height: 40px; background: var(--bg-page); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--accent-bronze);">
+              <i class="bi bi-clock-history fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-semibold text-dark">Application History</div>
+              <small class="text-muted">Track approvals & remarks</small>
+            </div>
+          </div>
+        </a>
+      </div>
+      <div class="col-sm-6">
+        <a href="{{ url_for('student.complaints') }}" class="content-panel text-decoration-none d-block p-3 hover-lift">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 40px; height: 40px; background: var(--bg-page); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--accent-bronze);">
+              <i class="bi bi-chat-left-dots fs-5"></i>
+            </div>
+            <div>
+              <div class="fw-semibold text-dark">Hostel Complaints</div>
+              <small class="text-muted">Report & track repair tickets</small>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Campus & Hostel Announcements -->
+  <div class="col-lg-5">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-megaphone text-warning" style="color: var(--accent-bronze) !important;"></i> Announcements</h2>
+        <a href="{{ url_for('student.announcements') }}" class="text-muted small">View all</a>
+      </div>
+
+      {% if announcements %}
+        <div class="d-flex flex-column gap-3">
+          {% for ann in announcements %}
+            <div class="pb-3 border-bottom" style="border-color: var(--border-color);">
+              <div class="d-flex justify-content-between align-items-start mb-1">
+                <span class="fw-semibold" style="font-size: 13.5px;">{{ ann.title }}</span>
+                <span class="custom-badge badge-neutral" style="font-size: 10px;">{{ ann.created_at.strftime('%b %d') }}</span>
+              </div>
+              <p class="text-muted small mb-0" style="line-height: 1.4;">{{ ann.description }}</p>
+              <div class="mt-1" style="font-size: 11px; color: var(--accent-bronze);">
+                <i class="bi bi-building me-1"></i> {{ ann.hostel.hostel_name if ann.hostel else 'Campus Wide' }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4 text-muted small">No announcements posted yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

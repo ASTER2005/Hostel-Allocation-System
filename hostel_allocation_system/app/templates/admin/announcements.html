@@ -1,0 +1,93 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Manage Announcements{% endblock %}
+{% block page_title %}Official Announcements & Notices{% endblock %}
+{% block page_subtitle %}Broadcast campus-wide notices or publish hall-specific circulars{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-megaphone text-warning" style="color: var(--accent-bronze) !important;"></i> Published Notices</h2>
+    <button class="btn-custom btn-bronze btn-sm-custom" data-bs-toggle="modal" data-bs-target="#newAnnouncementModal">
+      <i class="bi bi-plus-lg"></i> Publish Announcement
+    </button>
+  </div>
+
+  {% if announcements %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Audience</th>
+            <th>Published By</th>
+            <th>Description</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ann in announcements %}
+            <tr>
+              <td>{{ ann.created_at.strftime('%b %d, %Y') }}</td>
+              <td class="fw-bold">{{ ann.title }}</td>
+              <td>
+                <span class="custom-badge badge-neutral">
+                  {{ ann.hostel.hostel_name if ann.hostel else 'Campus Wide' }}
+                </span>
+              </td>
+              <td>{{ ann.creator.name if ann.creator else 'Admin' }}</td>
+              <td style="max-width: 320px;"><span class="text-secondary small">{{ ann.description }}</span></td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.delete_announcement', ann_id=ann.id) }}" 
+                      onsubmit="return confirm('Delete this announcement?');" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-custom btn-danger-outline btn-sm-custom py-1 px-2" title="Delete Announcement">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No announcements published.</div>
+  {% endif %}
+</div>
+
+<!-- Publish Announcement Modal -->
+<div class="modal fade" id="newAnnouncementModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--radius-md);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+        <h5 class="modal-title fw-bold">Publish Official Notice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.announcements') }}">
+        {{ form.hidden_tag() }}
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label-custom">Title / Subject</label>
+            {{ form.title(class="form-control-custom", placeholder="e.g. Term end hostel vacation schedule") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Target Audience</label>
+            {{ form.hostel_id(class="form-select-custom") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Announcement Details</label>
+            {{ form.description(class="form-control-custom", rows="4", placeholder="Full announcement text...") }}
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-custom btn-bronze">Publish Notice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

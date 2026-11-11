@@ -1,0 +1,108 @@
+{% extends "shared/base.html" %}
+
+{% block title %}My Assigned Hostel - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}{{ hostel.hostel_name }}{% endblock %}
+{% block page_subtitle %}Hall specifications, block amenities, warden jurisdiction and resident rules{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="content-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-building text-warning" style="color: var(--accent-bronze) !important;"></i> Hostel Overview</h2>
+        <span class="custom-badge badge-neutral">{{ hostel.hostel_type }} Hall</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-3 p-3 bg-light rounded mb-3">
+        <div style="width: 48px; height: 48px; background: var(--sidebar-bg); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--accent-bronze);">
+          <i class="bi bi-buildings fs-4"></i>
+        </div>
+        <div>
+          <h3 class="h5 fw-bold mb-0">{{ hostel.hostel_name }}</h3>
+          <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ hostel.address }}</small>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Total Rooms</small>
+            <span class="fw-semibold">{{ hostel.total_rooms }} Units</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Total Design Beds</small>
+            <span class="fw-semibold">{{ hostel.total_capacity }} Beds</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Occupied Beds</small>
+            <span class="fw-semibold text-primary" style="color: var(--accent-bronze) !important;">{{ hostel.total_occupied }}</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Available Capacity</small>
+            <span class="fw-semibold text-success">{{ hostel.free_beds }} Free Beds</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 border rounded bg-white">
+        <h4 class="h6 fw-bold mb-1">Hostel Amenities & Facilities</h4>
+        <p class="text-secondary small mb-0">{{ hostel.description }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Interactive Floor Cutaway for Warden -->
+  <div class="col-lg-6">
+    <div class="content-panel p-2 shadow-sm sticky-top" style="top: 80px;">
+      <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--border-color);">
+        <div>
+          <span class="fw-semibold" style="font-size: 13px;">Hostel Architectural 3D Cutaway</span>
+          <small class="text-muted d-block">{{ hostel.hostel_name }} Floor 1</small>
+        </div>
+        <div class="d-flex gap-1">
+          <button class="three-control-btn active" onclick="switchWarden3D('floor', this)">Floor Plan</button>
+          <button class="three-control-btn" onclick="switchWarden3D('building', this)">Exterior</button>
+        </div>
+      </div>
+
+      <div id="warden-hostel-3d" class="three-canvas-container" style="height: 380px;">
+        <div class="three-legend-box">
+          <span><i class="bi bi-arrows-move me-1"></i> Orbit</span>
+          <span><i class="bi bi-zoom-in me-1"></i> Zoom</span>
+        </div>
+      </div>
+
+      <div class="p-2 text-muted small" style="font-size: 11.5px;">
+        <i class="bi bi-info-circle me-1"></i> Isometric floor cutaway showing corridor layout and numbered residential suites.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let wardenViewer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  wardenViewer = initHostel3D('warden-hostel-3d', {
+    mode: 'floor',
+    enableAutoRotate: false
+  });
+});
+
+function switchWarden3D(mode, btn) {
+  if (btn) {
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  if (wardenViewer) wardenViewer.buildMode(mode);
+}
+</script>
+{% endblock %}
+

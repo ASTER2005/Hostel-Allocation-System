@@ -1,0 +1,35 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Live Database Sheet - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}{{ hostel.hostel_name }} — Live Database Sheet{% endblock %}
+{% block page_subtitle %}Live spreadsheet view scoped strictly to {{ hostel.hostel_name }}. Edit room availability, resident check-in/out, and complaints live in sheet cells.{% endblock %}
+
+{% block content %}
+<div class="content-panel p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="custom-badge badge-neutral"><i class="bi bi-shield-check text-warning me-1" style="color: var(--accent-bronze) !important;"></i> Warden Write Access Scoped to {{ hostel.hostel_name }}</span>
+      <span class="text-muted small">Only records for your assigned hostel can be edited.</span>
+    </div>
+    <div class="small text-muted">
+      Press <kbd class="bg-light text-dark border">Enter</kbd> or click outside a cell to save live.
+    </div>
+  </div>
+</div>
+
+<!-- Live Sheet Root Container -->
+<div id="warden-live-sheet-root"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  initLiveSheet({
+    role: 'warden',
+    containerId: 'warden-live-sheet-root',
+    csrfToken: '{{ csrf_token() }}'
+  });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,104 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Check-in & Check-out - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}Check-in & Departure Register{% endblock %}
+{% block page_subtitle %}{{ hostel.hostel_name }} — Record physical resident arrival and check-out (releasing bed capacity){% endblock %}
+
+{% block content %}
+<!-- Active Residents Check-in / Out Desk -->
+<div class="content-panel mb-4">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-box-arrow-in-right text-warning" style="color: var(--accent-bronze) !important;"></i> Resident Check-in / Check-out Desk</h2>
+    <span class="custom-badge badge-neutral">{{ allocations|length }} Active Placements</span>
+  </div>
+
+  {% if allocations %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Room No</th>
+            <th>Resident Scholar</th>
+            <th>Roll No</th>
+            <th>Department</th>
+            <th>Arrival Date</th>
+            <th>Current Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in allocations %}
+            <tr>
+              <td class="fw-bold fs-6">{{ a.room.room_number }}</td>
+              <td>{{ a.student.user.name }}</td>
+              <td>{{ a.student.registration_number }}</td>
+              <td>{{ a.student.department }}</td>
+              <td>{{ a.check_in_date.strftime('%b %d, %Y') if a.check_in_date else 'Pending Arrival' }}</td>
+              <td>{{ a.status|status_badge|safe }}</td>
+              <td>
+                {% if a.status == 'Allocated' %}
+                  <form method="POST" action="{{ url_for('warden.process_checkin_checkout', alloc_id=a.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="checkin">
+                    <button type="submit" class="btn-custom btn-bronze btn-sm-custom">
+                      <i class="bi bi-box-arrow-in-right"></i> Check In
+                    </button>
+                  </form>
+                {% elif a.status == 'Checked-In' %}
+                  <form method="POST" action="{{ url_for('warden.process_checkin_checkout', alloc_id=a.id) }}" 
+                        onsubmit="return confirm('Check out {{ a.student.user.name }} from Room {{ a.room.room_number }}? The bed will be released.');" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="checkout">
+                    <button type="submit" class="btn-custom btn-outline-custom btn-sm-custom">
+                      <i class="bi bi-box-arrow-right"></i> Check Out (Release Bed)
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No allocations pending arrival or resident in {{ hostel.hostel_name }}.</div>
+  {% endif %}
+</div>
+
+<!-- Recent Check-out History -->
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-clock-history text-warning" style="color: var(--accent-bronze) !important;"></i> Recent Departures & Released Beds</h2>
+  </div>
+
+  {% if recent_checkouts %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Scholar</th>
+            <th>Roll No</th>
+            <th>Vacated Room</th>
+            <th>Departure Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_checkouts %}
+            <tr>
+              <td>{{ r.student.user.name }}</td>
+              <td>{{ r.student.registration_number }}</td>
+              <td>Room {{ r.room.room_number }}</td>
+              <td>{{ r.check_out_date.strftime('%B %d, %Y') if r.check_out_date else '-' }}</td>
+              <td>{{ r.status|status_badge|safe }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-4 text-muted small">No past departures recorded recently.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

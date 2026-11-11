@@ -1,0 +1,152 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Manage Hostels{% endblock %}
+{% block page_title %}Hostel Residence Halls{% endblock %}
+{% block page_subtitle %}Add, configure and manage campus residence blocks and capacity quotas{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-buildings text-warning" style="color: var(--accent-bronze) !important;"></i> Residence Halls Directory</h2>
+    <button class="btn-custom btn-bronze btn-sm-custom" data-bs-toggle="modal" data-bs-target="#addHostelModal">
+      <i class="bi bi-plus-lg"></i> Add New Hostel
+    </button>
+  </div>
+
+  <div class="table-responsive-wrapper">
+    <table class="custom-table">
+      <thead>
+        <tr>
+          <th>Hostel Name</th>
+          <th>Hall Type</th>
+          <th>Campus Address</th>
+          <th>Configured Rooms</th>
+          <th>Total Beds</th>
+          <th>Occupied</th>
+          <th>Free Beds</th>
+          <th>Assigned Warden</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hostels %}
+          {% set wardens = h.wardens.all() %}
+          <tr>
+            <td class="fw-bold">{{ h.hostel_name }}</td>
+            <td>
+              <span class="custom-badge {{ 'badge-approved' if h.hostel_type == 'Boys' else 'badge-pending' if h.hostel_type == 'Girls' else 'badge-neutral' }}">
+                {{ h.hostel_type }}
+              </span>
+            </td>
+            <td>{{ h.address }}</td>
+            <td>{{ h.total_rooms }}</td>
+            <td>{{ h.total_capacity }}</td>
+            <td>{{ h.total_occupied }}</td>
+            <td><span class="custom-badge badge-available">{{ h.free_beds }} Free</span></td>
+            <td>
+              {% if wardens %}
+                <span class="fw-semibold">{{ wardens[0].user.name }}</span>
+              {% else %}
+                <span class="text-muted small">Unassigned</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex gap-1">
+                <button class="btn-custom btn-outline-custom btn-sm-custom py-1 px-2" data-bs-toggle="modal" data-bs-target="#editHostelModal{{ h.id }}">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <form method="POST" action="{{ url_for('admin.delete_hostel', hostel_id=h.id) }}" 
+                      onsubmit="return confirm('Permanently delete {{ h.hostel_name }} and all its rooms?');" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-custom btn-danger-outline btn-sm-custom py-1 px-2" title="Delete Hostel">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Edit Modal for this Hostel -->
+          <div class="modal fade" id="editHostelModal{{ h.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content" style="border-radius: var(--radius-md);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                  <h5 class="modal-title fw-bold">Edit {{ h.hostel_name }}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('admin.edit_hostel', hostel_id=h.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <div class="modal-body p-4">
+                    <div class="mb-3">
+                      <label class="form-label-custom">Hostel Name</label>
+                      <input type="text" name="hostel_name" class="form-control-custom" value="{{ h.hostel_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label-custom">Hostel Type</label>
+                      <select name="hostel_type" class="form-select-custom">
+                        <option value="Boys" {{ 'selected' if h.hostel_type == 'Boys' else '' }}>Boys Hostel</option>
+                        <option value="Girls" {{ 'selected' if h.hostel_type == 'Girls' else '' }}>Girls Hostel</option>
+                        <option value="Co-ed" {{ 'selected' if h.hostel_type == 'Co-ed' else '' }}>Co-ed / Post Graduate</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label-custom">Campus Address</label>
+                      <input type="text" name="address" class="form-control-custom" value="{{ h.address }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label-custom">Description & Amenities</label>
+                      <textarea name="description" class="form-control-custom" rows="3">{{ h.description or '' }}</textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-custom btn-bronze">Save Changes</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Hostel Modal -->
+<div class="modal fade" id="addHostelModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--radius-md);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+        <h5 class="modal-title fw-bold">Add New Residential Hall</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.hostels') }}">
+        {{ form.hidden_tag() }}
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label-custom">Hostel Name</label>
+            {{ form.hostel_name(class="form-control-custom", placeholder="e.g. Tagore Hall") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Hostel Type</label>
+            {{ form.hostel_type(class="form-select-custom") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Campus Location / Address</label>
+            {{ form.address(class="form-control-custom", placeholder="e.g. North Campus, Gate 3") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Description & Facilities</label>
+            {{ form.description(class="form-control-custom", rows="3", placeholder="Facilities, dining hall, security...") }}
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-custom btn-bronze">Create Hostel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

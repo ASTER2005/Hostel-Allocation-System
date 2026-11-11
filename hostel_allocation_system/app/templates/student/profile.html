@@ -1,0 +1,94 @@
+{% extends "shared/base.html" %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_title %}Personal & Academic Profile{% endblock %}
+{% block page_subtitle %}Manage your student contact records and departmental details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-pencil-square text-warning" style="color: var(--accent-bronze) !important;"></i> Edit Profile Information</h2>
+      </div>
+
+      <form method="POST" action="{{ url_for('student.profile') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          <label class="form-label-custom">Full Name</label>
+          {{ form.name(class="form-control-custom") }}
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label-custom">College Registration Number (Read-Only)</label>
+            <input type="text" class="form-control-custom" value="{{ student.registration_number }}" disabled style="background-color: var(--bg-page);">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">College Email (Read-Only)</label>
+            <input type="text" class="form-control-custom" value="{{ student.user.email }}" disabled style="background-color: var(--bg-page);">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label-custom">Phone Number</label>
+            {{ form.phone(class="form-control-custom") }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">Academic Year</label>
+            {{ form.academic_year(class="form-select-custom") }}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-custom">Department / Major</label>
+          {{ form.department(class="form-control-custom") }}
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label-custom">Permanent Address</label>
+          {{ form.address(class="form-control-custom", rows="2") }}
+        </div>
+
+        <button type="submit" class="btn-custom btn-bronze">
+          <i class="bi bi-check2"></i> Save Profile Updates
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-shield-check text-warning" style="color: var(--accent-bronze) !important;"></i> Housing Record Status</h2>
+      </div>
+
+      <div class="mb-3 pb-3 border-bottom" style="border-color: var(--border-color);">
+        <small class="text-muted d-block text-uppercase" style="font-size: 11px;">Current Assigned Room</small>
+        <span class="fs-6 fw-semibold text-dark">
+          {% if student.active_allocation and student.active_allocation.room %}
+            {{ student.active_allocation.room.hostel.hostel_name }} — Room {{ student.active_allocation.room.room_number }}
+          {% else %}
+            Unallocated
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="mb-3 pb-3 border-bottom" style="border-color: var(--border-color);">
+        <small class="text-muted d-block text-uppercase" style="font-size: 11px;">Hostel Eligibility Classification</small>
+        <span class="fs-6 fw-semibold text-dark">
+          {{ student.gender }} Scholar &bull; {{ student.department }}
+        </span>
+      </div>
+
+      <div>
+        <small class="text-muted d-block text-uppercase" style="font-size: 11px;">Account Registered</small>
+        <span class="small text-muted">{{ student.user.created_at.strftime('%B %d, %Y') }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,33 @@
+{% extends "shared/base.html" %}
+
+{% block title %}{{ title }} - {{ code }}{% endblock %}
+
+{% block public_content %}
+<div class="container py-5 text-center" style="max-width: 600px; margin-top: 60px;">
+  <div style="width: 80px; height: 80px; background: var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--accent-bronze);">
+    <i class="bi bi-shield-exclamation fs-1"></i>
+  </div>
+  <h1 class="display-5 fw-bold mb-2">{{ code }}</h1>
+  <h2 class="h4 text-muted mb-3">{{ title }}</h2>
+  <p class="text-secondary mb-4">{{ message }}</p>
+  <div>
+    <a href="{{ url_for('auth.landing') }}" class="btn-custom btn-bronze">
+      <i class="bi bi-house"></i> Return to Homepage
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-panel text-center py-5 my-4" style="max-width: 650px; margin: 40px auto;">
+  <div style="width: 72px; height: 72px; background: #faf8f3; border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--danger-color);">
+    <i class="bi bi-exclamation-octagon fs-1"></i>
+  </div>
+  <h2 class="h3 fw-bold mb-2">{{ code }} - {{ title }}</h2>
+  <p class="text-muted mb-4">{{ message }}</p>
+  <button onclick="history.back()" class="btn-custom btn-outline-custom">
+    <i class="bi bi-arrow-left"></i> Go Back
+  </button>
+</div>
+{% endblock %}
+

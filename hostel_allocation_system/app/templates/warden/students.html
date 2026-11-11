@@ -1,0 +1,61 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Resident Scholars - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}Resident Scholars Roster{% endblock %}
+{% block page_subtitle %}{{ hostel.hostel_name }} — Directory of all resident scholars allocated to this hostel{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <!-- Search Toolbar -->
+  <form method="GET" action="{{ url_for('warden.students') }}" class="row g-2 align-items-center mb-3">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0" style="border-color: var(--border-color);"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" name="q" class="form-control-custom border-start-0 ps-0" placeholder="Search by name, roll no, room no..." value="{{ query }}">
+      </div>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button type="submit" class="btn-custom btn-bronze btn-sm-custom">Search</button>
+      <a href="{{ url_for('warden.students') }}" class="btn-custom btn-outline-custom btn-sm-custom">Reset</a>
+    </div>
+  </form>
+
+  {% if allocations %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Room No</th>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Department</th>
+            <th>Academic Year</th>
+            <th>Allotted On</th>
+            <th>Arrival Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in allocations %}
+            <tr>
+              <td class="fw-bold fs-6">{{ a.room.room_number }}</td>
+              <td class="fw-semibold">{{ a.student.registration_number }}</td>
+              <td>{{ a.student.user.name }}</td>
+              <td>{{ a.student.user.email }}</td>
+              <td>{{ a.student.phone }}</td>
+              <td>{{ a.student.department }}</td>
+              <td>Year {{ a.student.academic_year }}</td>
+              <td>{{ a.allocation_date.strftime('%b %d, %Y') }}</td>
+              <td>{{ a.status|status_badge|safe }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No resident scholars found in {{ hostel.hostel_name }}.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

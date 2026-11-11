@@ -1,0 +1,110 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Manage Students{% endblock %}
+{% block page_title %}Student Records{% endblock %}
+{% block page_subtitle %}Directory of all enrolled scholars, departmental information, and active allocations{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <!-- Search & Filters Toolbar -->
+  <form method="GET" action="{{ url_for('admin.students') }}" class="row g-2 align-items-center mb-3">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-white border-end-0" style="border-color: var(--border-color);"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" name="q" class="form-control-custom border-start-0 ps-0" placeholder="Search by name, roll no, email..." value="{{ query }}">
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <select name="dept" class="form-select-custom" onchange="this.form.submit()">
+        <option value="">All Departments</option>
+        {% for d in departments %}
+          <option value="{{ d }}" {{ 'selected' if selected_dept == d else '' }}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <select name="year" class="form-select-custom" onchange="this.form.submit()">
+        <option value="">All Years</option>
+        {% for y in [1, 2, 3, 4] %}
+          <option value="{{ y }}" {{ 'selected' if selected_year == y else '' }}>Year {{ y }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn-custom btn-bronze btn-sm-custom flex-grow-1">Filter</button>
+      <a href="{{ url_for('admin.students') }}" class="btn-custom btn-outline-custom btn-sm-custom">Reset</a>
+    </div>
+  </form>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted small">Showing {{ students|length }} student record(s)</span>
+    <a href="{{ url_for('admin.sheets') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+      <i class="bi bi-table"></i> Edit in Live Database Sheet
+    </a>
+  </div>
+
+  {% if students %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Roll No.</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Gender</th>
+            <th>Allocated Room</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+            {% set alloc = s.active_allocation %}
+            <tr>
+              <td class="fw-semibold">{{ s.registration_number }}</td>
+              <td>{{ s.user.name }}</td>
+              <td>{{ s.user.email }}</td>
+              <td>{{ s.phone }}</td>
+              <td>{{ s.department }}</td>
+              <td>Year {{ s.academic_year }}</td>
+              <td>{{ s.gender }}</td>
+              <td>
+                {% if alloc and alloc.room %}
+                  <span class="fw-semibold">{{ alloc.room.hostel.hostel_name }} — {{ alloc.room.room_number }}</span>
+                {% else %}
+                  <span class="text-muted small">None</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if alloc %}
+                  {{ alloc.status|status_badge|safe }}
+                {% else %}
+                  <span class="custom-badge badge-neutral">Unallocated</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.delete_student', student_id=s.id) }}" 
+                      onsubmit="return confirm('Permanently delete student {{ s.registration_number }}? All active allocations and records will be deleted.');" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-custom btn-danger-outline btn-sm-custom py-1 px-2" title="Delete Student Record">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No students found matching your criteria.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

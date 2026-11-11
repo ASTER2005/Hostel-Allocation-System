@@ -1,0 +1,41 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Hostel Announcements{% endblock %}
+{% block page_title %}Hostel Notices & Circulars{% endblock %}
+{% block page_subtitle %}Official campus communications, maintenance schedules, and hall guidelines{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-megaphone text-warning" style="color: var(--accent-bronze) !important;"></i> Recent Notices</h2>
+  </div>
+
+  {% if announcements %}
+    <div class="d-flex flex-column gap-3">
+      {% for ann in announcements %}
+        <div class="p-3 border rounded bg-white">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h3 class="h6 fw-bold mb-1">{{ ann.title }}</h3>
+              <div class="d-flex align-items-center gap-2">
+                <span class="custom-badge badge-neutral" style="font-size: 10px;">
+                  <i class="bi bi-building me-1"></i> {{ ann.hostel.hostel_name if ann.hostel else 'Campus Wide' }}
+                </span>
+                <span class="text-muted small"><i class="bi bi-person me-1"></i> {{ ann.creator.name if ann.creator else 'Admin' }}</span>
+              </div>
+            </div>
+            <span class="text-muted small">{{ ann.created_at.strftime('%B %d, %Y - %I:%M %p') }}</span>
+          </div>
+
+          <p class="text-secondary small mb-0" style="line-height: 1.6;">
+            {{ ann.description }}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No announcements posted at this time.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,129 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Room Allocation Management{% endblock %}
+{% block page_title %}Room Allotment & Bed Management{% endblock %}
+{% block page_subtitle %}Assign approved scholars to available rooms and manage active allocations{% endblock %}
+
+{% block content %}
+<!-- Section 1: Approved Applications Awaiting Room Assignment -->
+<div class="content-panel mb-4">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-person-check text-warning" style="color: var(--accent-bronze) !important;"></i> Approved Applications Awaiting Room Allocation</h2>
+    <span class="custom-badge badge-approved">{{ approved_apps|length }} Pending Allocation</span>
+  </div>
+
+  {% if approved_apps %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Application</th>
+            <th>Candidate Scholar</th>
+            <th>Preference</th>
+            <th>Assign Room</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in approved_apps %}
+            <tr>
+              <td class="fw-semibold">#APP-{{ a.id }}</td>
+              <td>
+                <span class="fw-bold">{{ a.student.user.name }}</span>
+                <small class="text-muted d-block">{{ a.student.registration_number }} &bull; {{ a.student.gender }} &bull; {{ a.student.department }}</small>
+              </td>
+              <td>
+                <span class="fw-semibold">{{ a.preferred_hostel.hostel_name }}</span>
+                <small class="text-muted d-block">{{ a.preferred_room_type }}</small>
+              </td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.allocate_room') }}" id="allocForm{{ a.id }}" class="d-flex align-items-center gap-2">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="application_id" value="{{ a.id }}">
+                  
+                  <select name="room_id" class="form-select-custom form-select-sm" style="min-width: 240px;" required>
+                    <option value="">-- Choose Available Room --</option>
+                    {% for r in available_rooms %}
+                      <!-- Pre-select if matches preferred hostel and room type -->
+                      <option value="{{ r.id }}" {{ 'selected' if r.hostel_id == a.preferred_hostel_id and r.room_type == a.preferred_room_type else '' }}>
+                        {{ r.hostel.hostel_name }} &bull; Room {{ r.room_number }} ({{ r.room_type }} &bull; {{ r.free_beds }} free)
+                      </option>
+                    {% endfor %}
+                  </select>
+                </form>
+              </td>
+              <td>
+                <button type="submit" form="allocForm{{ a.id }}" class="btn-custom btn-bronze btn-sm-custom">
+                  <i class="bi bi-key"></i> Allocate Room
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-4 text-muted small">
+      <i class="bi bi-check2-circle fs-3 text-success d-block mb-1"></i>
+      No approved applications waiting for room allocation. All eligible students have been placed.
+    </div>
+  {% endif %}
+</div>
+
+<!-- Section 2: Active Room Allocations Directory -->
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-key text-warning" style="color: var(--accent-bronze) !important;"></i> Active Room Allocations</h2>
+    <span class="text-muted small">{{ active_allocations|length }} Active Placements</span>
+  </div>
+
+  {% if active_allocations %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Alloc #</th>
+            <th>Resident Scholar</th>
+            <th>Hostel Hall</th>
+            <th>Room Number</th>
+            <th>Configuration</th>
+            <th>Allocation Date</th>
+            <th>Check-in Date</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for alloc in active_allocations %}
+            <tr>
+              <td class="fw-semibold">#ALC-{{ alloc.id }}</td>
+              <td>
+                <span class="fw-bold">{{ alloc.student.user.name }}</span>
+                <small class="text-muted d-block">{{ alloc.student.registration_number }} &bull; {{ alloc.student.department }}</small>
+              </td>
+              <td>{{ alloc.room.hostel.hostel_name }}</td>
+              <td class="fw-bold fs-6">{{ alloc.room.room_number }}</td>
+              <td>{{ alloc.room.room_type }}</td>
+              <td>{{ alloc.allocation_date.strftime('%b %d, %Y') }}</td>
+              <td>{{ alloc.check_in_date.strftime('%b %d, %Y') if alloc.check_in_date else 'Pending Arrival' }}</td>
+              <td>{{ alloc.status|status_badge|safe }}</td>
+              <td>
+                <form method="POST" action="{{ url_for('admin.cancel_allocation', alloc_id=alloc.id) }}" 
+                      onsubmit="return confirm('Cancel allocation for {{ alloc.student.user.name }}? The bed in Room {{ alloc.room.room_number }} will be released immediately.');" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-custom btn-danger-outline btn-sm-custom py-1 px-2" title="Release Bed and Cancel Allocation">
+                    <i class="bi bi-x-circle"></i> Cancel Allocation
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No active allocations on record.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

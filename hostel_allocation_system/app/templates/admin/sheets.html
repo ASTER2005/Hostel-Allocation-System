@@ -1,0 +1,35 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Live Database Spreadsheet - Admin{% endblock %}
+{% block page_title %}Live Database Sheet{% endblock %}
+{% block page_subtitle %}Live interactive multi-table spreadsheet editor. Click any cell to modify records instantly with atomic server synchronization.{% endblock %}
+
+{% block content %}
+<div class="content-panel p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <span class="custom-badge badge-neutral"><i class="bi bi-shield-check text-success me-1"></i> Full Administrative Write Access</span>
+      <span class="text-muted small">All changes are written to the MySQL database in real time.</span>
+    </div>
+    <div class="small text-muted">
+      Press <kbd class="bg-light text-dark border">Enter</kbd> or click outside a cell to save.
+    </div>
+  </div>
+</div>
+
+<!-- Live Sheet Root Container -->
+<div id="live-sheet-root"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  initLiveSheet({
+    role: 'admin',
+    containerId: 'live-sheet-root',
+    csrfToken: '{{ csrf_token() }}'
+  });
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,154 @@
+{% extends "shared/base.html" %}
+
+{% block title %}My Room Details{% endblock %}
+{% block page_title %}My Allocated Accommodation{% endblock %}
+{% block page_subtitle %}Comprehensive room allocation details, roommate directory and 3D architectural interior{% endblock %}
+
+{% block content %}
+{% if allocation and allocation.room %}
+<div class="row g-4">
+  <!-- Left Column: Room Specs, Roommates & Warden Info -->
+  <div class="col-lg-6">
+    <div class="content-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-door-open text-warning" style="color: var(--accent-bronze) !important;"></i> Room Summary</h2>
+        {{ allocation.status|status_badge|safe }}
+      </div>
+
+      <div class="d-flex align-items-center gap-3 p-3 bg-light rounded mb-3">
+        <div style="width: 50px; height: 50px; background: var(--sidebar-bg); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--accent-bronze);">
+          <span class="fs-4 fw-bold text-white">{{ allocation.room.room_number }}</span>
+        </div>
+        <div>
+          <h3 class="h5 fw-bold mb-0">{{ allocation.room.hostel.hostel_name }}</h3>
+          <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ allocation.room.hostel.address }}</span>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Configuration</small>
+            <span class="fw-semibold">{{ allocation.room.room_type }} Sharing</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Total Capacity</small>
+            <span class="fw-semibold">{{ allocation.room.capacity }} Beds ({{ allocation.room.occupied_count }} Occupied)</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Allotted On</small>
+            <span class="fw-semibold">{{ allocation.allocation_date.strftime('%B %d, %Y') }}</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded">
+            <small class="text-muted d-block" style="font-size: 11px;">Check-in Date</small>
+            <span class="fw-semibold">{{ allocation.check_in_date.strftime('%B %d, %Y') if allocation.check_in_date else 'Pending Arrival' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Roommates Directory -->
+    <div class="content-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-people text-warning" style="color: var(--accent-bronze) !important;"></i> Co-Occupants / Roommates</h2>
+      </div>
+
+      {% if roommates %}
+        <div class="d-flex flex-column gap-2">
+          {% for rm in roommates %}
+            <div class="d-flex align-items-center justify-content-between p-2 border rounded bg-white">
+              <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar" style="width: 32px; height: 32px; font-size: 13px;">{{ rm.user.name[:1] }}</div>
+                <div>
+                  <div class="fw-semibold" style="font-size: 13px;">{{ rm.user.name }}</div>
+                  <small class="text-muted">{{ rm.registration_number }} &bull; {{ rm.department }}</small>
+                </div>
+              </div>
+              <span class="custom-badge badge-checked-in">Resident</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted small mb-0">No roommates allocated to this room yet (or single occupancy room).</p>
+      {% endif %}
+    </div>
+
+    <!-- Warden Contact Card -->
+    {% if warden %}
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-person-badge text-warning" style="color: var(--accent-bronze) !important;"></i> Assigned Hostel Warden</h2>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <div class="user-avatar" style="width: 42px; height: 42px; font-size: 16px;">{{ warden.user.name[:1] }}</div>
+        <div>
+          <div class="fw-bold">{{ warden.user.name }}</div>
+          <small class="text-muted d-block"><i class="bi bi-telephone me-1"></i>{{ warden.phone }}</small>
+          <small class="text-muted d-block"><i class="bi bi-envelope me-1"></i>{{ warden.user.email }}</small>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Right Column: 3D Room Interior Inspection -->
+  <div class="col-lg-6">
+    <div class="content-panel p-2 shadow-sm sticky-top" style="top: 80px;">
+      <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--border-color);">
+        <div>
+          <span class="fw-semibold" style="font-size: 13px;">3D Room Spatial View</span>
+          <small class="text-muted d-block">Room {{ allocation.room.room_number }} ({{ allocation.room.room_type }})</small>
+        </div>
+        <span class="custom-badge badge-neutral">Interactive Three.js Model</span>
+      </div>
+
+      <div id="student-room-3d" class="three-canvas-container" style="height: 420px;">
+        <div class="three-legend-box">
+          <span><i class="bi bi-arrows-move me-1"></i> Drag to Rotate</span>
+          <span><i class="bi bi-zoom-in me-1"></i> Zoom In/Out</span>
+        </div>
+      </div>
+
+      <div class="p-3 text-muted small" style="font-size: 12px;">
+        <i class="bi bi-lightbulb me-1"></i> Standard furnishings provided: bed with mattress, individual study station, wardrobe space, and study lighting.
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="content-panel text-center py-5">
+  <div style="width: 64px; height: 64px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--accent-bronze);">
+    <i class="bi bi-door-closed fs-2"></i>
+  </div>
+  <h3 class="h5 fw-bold mb-2">No Room Currently Allocated</h3>
+  <p class="text-muted small mb-4" style="max-width: 480px; margin: 0 auto;">
+    You do not hold an active room allocation. If you haven't applied yet, submit an application for administrative review.
+  </p>
+  <a href="{{ url_for('student.apply') }}" class="btn-custom btn-bronze">
+    <i class="bi bi-pencil-square"></i> Apply for Hostel
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if allocation and allocation.room %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  initHostel3D('student-room-3d', {
+    mode: 'room',
+    roomType: '{{ allocation.room.room_type }}',
+    enableAutoRotate: false
+  });
+});
+</script>
+{% endif %}
+{% endblock %}
+

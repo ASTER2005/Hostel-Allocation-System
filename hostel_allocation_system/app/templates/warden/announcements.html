@@ -1,0 +1,77 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Hostel Announcements - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}Hostel Notices & Circulars{% endblock %}
+{% block page_subtitle %}{{ hostel.hostel_name }} — Official circulars, maintenance alerts and resident notices{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <div class="panel-header">
+    <h2 class="panel-title"><i class="bi bi-megaphone text-warning" style="color: var(--accent-bronze) !important;"></i> Published Notices</h2>
+    <button class="btn-custom btn-bronze btn-sm-custom" data-bs-toggle="modal" data-bs-target="#newWardenAnnModal">
+      <i class="bi bi-plus-lg"></i> Post Announcement
+    </button>
+  </div>
+
+  {% if announcements %}
+    <div class="d-flex flex-column gap-3">
+      {% for ann in announcements %}
+        <div class="p-3 border rounded bg-white">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h3 class="h6 fw-bold mb-1">{{ ann.title }}</h3>
+              <div class="d-flex align-items-center gap-2">
+                <span class="custom-badge badge-neutral" style="font-size: 10px;">
+                  <i class="bi bi-building me-1"></i> {{ ann.hostel.hostel_name if ann.hostel else 'Campus Wide' }}
+                </span>
+                <span class="text-muted small"><i class="bi bi-person me-1"></i> {{ ann.creator.name if ann.creator else 'Warden' }}</span>
+              </div>
+            </div>
+            <span class="text-muted small">{{ ann.created_at.strftime('%B %d, %Y - %I:%M %p') }}</span>
+          </div>
+
+          <p class="text-secondary small mb-0" style="line-height: 1.6;">
+            {{ ann.description }}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No announcements posted for this hostel.</div>
+  {% endif %}
+</div>
+
+<!-- Modal: Post Notice -->
+<div class="modal fade" id="newWardenAnnModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius: var(--radius-md);">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+        <h5 class="modal-title fw-bold">Post Notice for {{ hostel.hostel_name }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('warden.announcements') }}">
+        {{ form.hidden_tag() }}
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label-custom">Announcement Title</label>
+            {{ form.title(class="form-control-custom", placeholder="e.g. Water tank cleaning schedule") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Audience</label>
+            {{ form.hostel_id(class="form-select-custom", readonly=True) }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Notice Message</label>
+            {{ form.description(class="form-control-custom", rows="4", placeholder="Type notice message...") }}
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+          <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-custom btn-bronze">Publish Notice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

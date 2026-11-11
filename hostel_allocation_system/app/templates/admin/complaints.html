@@ -1,0 +1,107 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Manage Complaints{% endblock %}
+{% block page_title %}Complaints & Maintenance Tickets{% endblock %}
+{% block page_subtitle %}Campus-wide overview of facilities issues, resolution statuses and maintenance notes{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <!-- Filter Toolbar -->
+  <form method="GET" action="{{ url_for('admin.complaints') }}" class="d-flex flex-wrap gap-2 align-items-center mb-3">
+    <select name="status" class="form-select-custom" style="width: auto;" onchange="this.form.submit()">
+      <option value="">All Statuses</option>
+      {% for s in ['Open', 'In Progress', 'Resolved', 'Closed'] %}
+        <option value="{{ s }}" {{ 'selected' if selected_status == s else '' }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="hostel_id" class="form-select-custom" style="width: auto;" onchange="this.form.submit()">
+      <option value="">All Hostels</option>
+      {% for h in hostels %}
+        <option value="{{ h.id }}" {{ 'selected' if selected_hostel == h.id else '' }}>{{ h.hostel_name }}</option>
+      {% endfor %}
+    </select>
+
+    <a href="{{ url_for('admin.complaints') }}" class="btn-custom btn-outline-custom btn-sm-custom">Reset</a>
+  </form>
+
+  {% if complaints %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Ticket #</th>
+            <th>Resident Scholar</th>
+            <th>Hostel</th>
+            <th>Subject</th>
+            <th>Date Lodged</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Remarks</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in complaints %}
+            <tr>
+              <td class="fw-semibold">#TKT-{{ c.id }}</td>
+              <td>
+                <span class="fw-bold">{{ c.student.user.name }}</span>
+                <small class="text-muted d-block">{{ c.student.registration_number }}</small>
+              </td>
+              <td>{{ c.hostel.hostel_name if c.hostel else 'General' }}</td>
+              <td class="fw-semibold">{{ c.complaint_title }}</td>
+              <td>{{ c.complaint_date.strftime('%b %d, %Y') }}</td>
+              <td>{{ c.status|status_badge|safe }}</td>
+              <td style="max-width: 220px;"><span class="text-secondary small">{{ c.description }}</span></td>
+              <td style="max-width: 180px;"><span class="text-muted small">{{ c.warden_remarks or 'None' }}</span></td>
+              <td>
+                <button class="btn-custom btn-outline-custom btn-sm-custom py-1 px-2" data-bs-toggle="modal" data-bs-target="#updateComplaintModal{{ c.id }}">
+                  Update
+                </button>
+              </td>
+            </tr>
+
+            <!-- Update Modal -->
+            <div class="modal fade" id="updateComplaintModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: var(--radius-md);">
+                  <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title fw-bold">Update Ticket #TKT-{{ c.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <form method="POST" action="{{ url_for('admin.update_complaint', complaint_id=c.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="modal-body p-4">
+                      <div class="mb-3">
+                        <label class="form-label-custom">Resolution Status</label>
+                        <select name="status" class="form-select-custom">
+                          {% for st in ['Open', 'In Progress', 'Resolved', 'Closed'] %}
+                            <option value="{{ st }}" {{ 'selected' if c.status == st else '' }}>{{ st }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label-custom">Remarks / Actions Taken</label>
+                        <textarea name="warden_remarks" class="form-control-custom" rows="3">{{ c.warden_remarks or '' }}</textarea>
+                      </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                      <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" class="btn-custom btn-bronze">Save Update</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No complaints found.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

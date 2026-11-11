@@ -1,0 +1,108 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Student Registration - Hostel Allocation and Management System{% endblock %}
+
+{% block public_content %}
+<div class="container py-5" style="max-width: 780px;">
+  <div class="content-panel p-4 p-md-5 shadow-sm" style="border-radius: var(--radius-lg);">
+    
+    <div class="mb-4 text-center">
+      <span class="custom-badge badge-neutral mb-2">Admissions & Housing</span>
+      <h2 class="h3 fw-bold mb-1">Scholar Accommodation Registration</h2>
+      <p class="text-muted" style="font-size: 13.5px;">Create an account with your official college credentials to apply for hostel rooms.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      {{ form.hidden_tag() }}
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label-custom">Full Name</label>
+          {{ form.name(class="form-control-custom" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. Rahul Sharma") }}
+          {% for error in form.name.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label-custom">College Registration / Roll No.</label>
+          {{ form.registration_number(class="form-control-custom" + (" is-invalid" if form.registration_number.errors else ""), placeholder="e.g. CS2101") }}
+          {% for error in form.registration_number.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label-custom">College Email Address</label>
+          {{ form.email(class="form-control-custom" + (" is-invalid" if form.email.errors else ""), placeholder="rahul@college.edu") }}
+          {% for error in form.email.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label-custom">Phone Number (10 Digits)</label>
+          {{ form.phone(class="form-control-custom" + (" is-invalid" if form.phone.errors else ""), placeholder="9810012345") }}
+          {% for error in form.phone.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-5">
+          <label class="form-label-custom">Department / Major</label>
+          {{ form.department(class="form-control-custom" + (" is-invalid" if form.department.errors else ""), placeholder="Computer Science") }}
+          {% for error in form.department.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label-custom">Academic Year</label>
+          {{ form.academic_year(class="form-select-custom") }}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label-custom">Gender (Used for hostel routing)</label>
+          {{ form.gender(class="form-select-custom") }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label-custom">Permanent Residential Address</label>
+        {{ form.address(class="form-control-custom", rows="2", placeholder="Street, City, State, PIN") }}
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label-custom">Password (Min 6 characters)</label>
+          {{ form.password(class="form-control-custom" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+          {% for error in form.password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label-custom">Confirm Password</label>
+          {{ form.confirm_password(class="form-control-custom" + (" is-invalid" if form.confirm_password.errors else ""), placeholder="••••••••") }}
+          {% for error in form.confirm_password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-custom btn-bronze w-100 justify-content-center py-2 mb-3">
+        <i class="bi bi-person-check"></i> Complete Registration
+      </button>
+
+      <div class="text-center text-muted small">
+        Already have a student account? <a href="{{ url_for('auth.login') }}" class="fw-semibold text-dark">Sign in here</a>.
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

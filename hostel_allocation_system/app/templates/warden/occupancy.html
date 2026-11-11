@@ -1,0 +1,77 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Room Occupancy - {{ hostel.hostel_name }}{% endblock %}
+{% block page_title %}Room Occupancy Register{% endblock %}
+{% block page_subtitle %}{{ hostel.hostel_name }} — Real-time room status and resident occupant directory{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+  <!-- Status Filter Toolbar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+    <form method="GET" action="{{ url_for('warden.occupancy') }}" class="d-flex align-items-center gap-2">
+      <select name="status" class="form-select-custom" style="width: auto;" onchange="this.form.submit()">
+        <option value="">All Room Statuses</option>
+        {% for s in ['Available', 'Full', 'Maintenance'] %}
+          <option value="{{ s }}" {{ 'selected' if selected_status == s else '' }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <a href="{{ url_for('warden.occupancy') }}" class="btn-custom btn-outline-custom btn-sm-custom">Reset</a>
+    </form>
+
+    <a href="{{ url_for('warden.sheets') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+      <i class="bi bi-table"></i> Edit in Hostel Live Sheet
+    </a>
+  </div>
+
+  {% if rooms %}
+    <div class="table-responsive-wrapper">
+      <table class="custom-table">
+        <thead>
+          <tr>
+            <th>Room No</th>
+            <th>Type</th>
+            <th>Capacity</th>
+            <th>Occupied</th>
+            <th>Free Beds</th>
+            <th>Status</th>
+            <th>Current Resident Occupants</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rooms %}
+            {% set occupants = room_occupants.get(r.id, []) %}
+            <tr>
+              <td class="fw-bold fs-6">{{ r.room_number }}</td>
+              <td>{{ r.room_type }}</td>
+              <td>{{ r.capacity }} Beds</td>
+              <td>{{ r.occupied_count }}</td>
+              <td>
+                <span class="custom-badge {{ 'badge-available' if r.free_beds > 0 else 'badge-full' }}">
+                  {{ r.free_beds }} Free
+                </span>
+              </td>
+              <td>{{ r.status|status_badge|safe }}</td>
+              <td>
+                {% if occupants %}
+                  <div class="d-flex flex-wrap gap-1">
+                    {% for o in occupants %}
+                      <span class="custom-badge badge-neutral" style="font-size: 11px;">
+                        <i class="bi bi-person me-1"></i>{{ o.user.name }} ({{ o.registration_number }})
+                      </span>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <span class="text-muted small">No occupants</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted small">No rooms found in {{ hostel.hostel_name }}.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

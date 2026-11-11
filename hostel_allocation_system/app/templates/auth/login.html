@@ -1,0 +1,99 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Sign In - Hostel Allocation and Management System{% endblock %}
+
+{% block public_content %}
+<div class="container py-5" style="max-width: 960px;">
+  <div class="row g-0 content-panel p-0 overflow-hidden shadow-sm" style="border-radius: var(--radius-lg);">
+    
+    <!-- Left Hero Banner -->
+    <div class="col-lg-5 p-5 d-flex flex-column justify-content-between" style="background-color: var(--sidebar-bg); color: #F4F1E9;">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-buildings-fill text-warning" style="color: var(--accent-bronze) !important;"></i>
+          <span class="fw-semibold text-uppercase" style="font-size: 11px; letter-spacing: 0.1em; color: var(--accent-bronze);">Residential Services</span>
+        </div>
+        <h2 class="h3 fw-bold text-white mb-3">Welcome to the Hostel Portal</h2>
+        <p style="color: #9ea59a; font-size: 13px; line-height: 1.6;">
+          Sign in with your institutional credentials to manage hostel applications, room allocations, occupancy registers, and complaints.
+        </p>
+      </div>
+
+      <div class="pt-4 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+        <div class="text-white-50 small mb-2">Need a new student account?</div>
+        <a href="{{ url_for('auth.register') }}" class="btn-custom btn-outline-custom w-100 justify-content-center text-white" style="border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);">
+          Register as Student
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Login Form -->
+    <div class="col-lg-7 p-5 bg-white">
+      <div class="mb-4">
+        <h3 class="h4 fw-bold mb-1">Sign In</h3>
+        <span class="text-muted" style="font-size: 13px;">Enter your college email address and password</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('auth.login') }}">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          <label class="form-label-custom">Email Address</label>
+          {{ form.email(class="form-control-custom" + (" is-invalid" if form.email.errors else ""), placeholder="name@college.edu") }}
+          {% for error in form.email.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label-custom">Password</label>
+          {{ form.password(class="form-control-custom" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+          {% for error in form.password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+          <div class="form-check">
+            {{ form.remember_me(class="form-check-input") }}
+            <label class="form-check-label text-muted small" for="{{ form.remember_me.id }}">Remember me</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-custom btn-bronze w-100 justify-content-center py-2">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In to Portal
+        </button>
+      </form>
+
+      <!-- Instant One-Click Demo Credentials for Academic Evaluation -->
+      <div class="mt-4 pt-3 border-top" style="border-color: var(--border-color);">
+        <small class="text-muted d-block mb-2 fw-semibold" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">
+          One-Click Demo Evaluator Accounts:
+        </small>
+        <div class="d-flex flex-wrap gap-2">
+          <a href="{{ url_for('auth.demo_login', role='admin') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-shield-check text-danger"></i> Admin
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='warden') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-person-badge text-warning"></i> Warden (Ashoka)
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='warden2') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-person-badge text-warning"></i> Warden (Gargi)
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='student') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-mortarboard text-info"></i> Student (Pending)
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='student-approved') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-check2-circle text-success"></i> Student (Approved)
+          </a>
+          <a href="{{ url_for('auth.demo_login', role='student-allocated') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+            <i class="bi bi-key text-primary"></i> Student (Checked-In)
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+

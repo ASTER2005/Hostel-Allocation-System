@@ -1,0 +1,22 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Unassigned Warden{% endblock %}
+{% block page_title %}Warden Portal{% endblock %}
+{% block page_subtitle %}Account Status: Pending Hostel Assignment{% endblock %}
+
+{% block content %}
+<div class="content-panel text-center py-5" style="max-width: 620px; margin: 40px auto;">
+  <div style="width: 64px; height: 64px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--accent-bronze);">
+    <i class="bi bi-person-badge fs-2"></i>
+  </div>
+  <h3 class="h5 fw-bold mb-2">No Hostel Currently Assigned</h3>
+  <p class="text-muted small mb-4">
+    Your warden profile ({{ current_user.name }}) is active, but an administrator has not yet assigned you to a specific residential hall.
+    Please contact the Dean of Student Affairs to link your account to a hostel block.
+  </p>
+  <a href="{{ url_for('auth.logout') }}" class="btn-custom btn-outline-custom btn-sm-custom">
+    <i class="bi bi-box-arrow-right"></i> Sign Out
+  </a>
+</div>
+{% endblock %}
+

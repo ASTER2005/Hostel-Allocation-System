@@ -1,0 +1,2330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hostel Allocation and Management System - Imperial College</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Three.js & OrbitControls for Architectural 3D Experience -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM & ARCHITECTURAL PALETTE
+       Deep Charcoal: #202725 | Warm Ivory: #F4F1E9 | Muted Bronze: #A68A64
+       Sage Grey:     #DCE3DC | White:       #FFFFFF | Secondary Text: #777A73
+       Borders:       #E5E1D8 | Bad/Danger:  #B4574B
+       ========================================================================== */
+    :root {
+      --bg-page: #F4F1E9;
+      --surface-card: #FFFFFF;
+      --text-main: #202725;
+      --text-muted: #777A73;
+      --border-color: #E5E1D8;
+      --accent-bronze: #A68A64;
+      --accent-bronze-hover: #8e7452;
+      --accent-sage: #DCE3DC;
+      --sidebar-bg: #202725;
+      --sidebar-hover: #2c3532;
+      --sidebar-text: #cfd2c9;
+      --danger-color: #B4574B;
+      --danger-bg: #f8ebe9;
+      --success-color: #3b755d;
+      --success-bg: #eaf3ee;
+      --warning-color: #8c6a28;
+      --warning-bg: #fcf6e8;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --shadow-subtle: 0 1px 3px rgba(32, 39, 37, 0.05);
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Global Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-main);
+      background-color: var(--bg-page);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--text-main);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    /* Clean Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background-color: var(--sidebar-bg);
+      color: #F4F1E9;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .btn:hover {
+      background-color: #2e3734;
+      color: #FFFFFF;
+    }
+
+    .btn.btn-bronze {
+      background-color: var(--accent-bronze);
+      color: #FFFFFF;
+    }
+
+    .btn.btn-bronze:hover {
+      background-color: var(--accent-bronze-hover);
+    }
+
+    .btn.btn-outline {
+      background-color: transparent;
+      border-color: var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn.btn-outline:hover {
+      background-color: #efece4;
+      border-color: #d1cbc0;
+    }
+
+    .btn.btn-danger-outline {
+      background-color: transparent;
+      border-color: var(--danger-color);
+      color: var(--danger-color);
+    }
+
+    .btn.btn-danger-outline:hover {
+      background-color: var(--danger-bg);
+    }
+
+    .btn.btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    /* Forms & Inputs */
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin: 10px 0 4px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 8px 11px;
+      font-size: 13.5px;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-bronze);
+      box-shadow: 0 0 0 2px rgba(166, 138, 100, 0.15);
+    }
+
+    .grid-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .grid-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Badges & Status Pills */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2.5px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-approved, .badge-allocated, .badge-checked-in, .badge-resolved, .badge-available {
+      background-color: var(--success-bg);
+      color: var(--success-color);
+      border: 1px solid #c7e3d3;
+    }
+
+    .badge-pending, .badge-in-progress, .badge-open {
+      background-color: var(--warning-bg);
+      color: var(--warning-color);
+      border: 1px solid #ebdcb7;
+    }
+
+    .badge-rejected, .badge-cancelled, .badge-full, .badge-maintenance {
+      background-color: var(--danger-bg);
+      color: var(--danger-color);
+      border: 1px solid #f0cdc8;
+    }
+
+    .badge-neutral {
+      background-color: var(--accent-sage);
+      color: var(--text-main);
+      border: 1px solid #cad4ca;
+    }
+
+    /* ==========================================================================
+       PUBLIC AUTH & LANDING LAYOUT
+       ========================================================================== */
+    #auth-screen {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      min-height: 100vh;
+    }
+
+    .auth-hero {
+      background-color: var(--sidebar-bg);
+      color: #F4F1E9;
+      padding: 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .auth-hero-header small {
+      color: var(--accent-bronze);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .auth-hero h1 {
+      font-size: 34px;
+      line-height: 1.2;
+      color: #FFFFFF;
+      margin: 14px 0 16px;
+      max-width: 440px;
+    }
+
+    .auth-hero p {
+      color: #b9bdb4;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 440px;
+    }
+
+    .auth-3d-box {
+      width: 100%;
+      height: 240px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .auth-form-side {
+      padding: 48px;
+      max-width: 480px;
+      margin: auto;
+      width: 100%;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+    }
+
+    .auth-tabs button {
+      background: none;
+      border: 0;
+      padding: 10px 14px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+    }
+
+    .auth-tabs button.active {
+      color: var(--text-main);
+      font-weight: 600;
+      border-bottom-color: var(--accent-bronze);
+    }
+
+    .demo-chips-container {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .demo-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .demo-chip {
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 4px 11px;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      background-color: var(--surface-card);
+      transition: var(--transition);
+    }
+
+    .demo-chip:hover {
+      background-color: var(--accent-bronze);
+      color: #FFFFFF;
+      border-color: var(--accent-bronze);
+    }
+
+    /* ==========================================================================
+       AUTHENTICATED DASHBOARD LAYOUT
+       ========================================================================== */
+    #app-screen {
+      display: none;
+      min-height: 100vh;
+    }
+
+    aside {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 240px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      padding: 24px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 100;
+      overflow-y: auto;
+      transition: transform 0.25s ease;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    aside .brand-header {
+      padding: 0 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #F4F1E9;
+    }
+
+    aside .brand-header small {
+      display: block;
+      color: var(--accent-bronze);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 2px;
+    }
+
+    aside a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--sidebar-text);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    aside a:hover {
+      background-color: var(--sidebar-hover);
+      color: #FFFFFF;
+    }
+
+    aside a.active {
+      background-color: var(--sidebar-hover);
+      color: #FFFFFF;
+      box-shadow: inset 3px 0 var(--accent-bronze);
+    }
+
+    main {
+      margin-left: 240px;
+      padding: 28px 36px 48px;
+      max-width: 1360px;
+    }
+
+    .top-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 12px;
+    }
+
+    .top-header h2 {
+      font-size: 21px;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
+      font-size: 13px;
+    }
+
+    /* Metric Cards Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .metric-card {
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 15px 16px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .metric-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .metric-card .val {
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-top: 4px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Panels & Tables */
+    .panel {
+      background-color: var(--surface-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header h3 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .charts-grid .panel {
+      margin-bottom: 0;
+    }
+
+    .charts-grid canvas {
+      max-height: 240px;
+      width: 100%;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #FFFFFF;
+    }
+
+    th {
+      background-color: #faf9f6;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: #fbfaf8;
+    }
+
+    /* Live Sheet Cell Input */
+    td input.sheet-cell {
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 4px 6px;
+      border-radius: 4px;
+      width: 100%;
+      font-size: 12.5px;
+    }
+
+    td input.sheet-cell:hover {
+      border-color: var(--border-color);
+      background-color: #FFFFFF;
+    }
+
+    td input.sheet-cell:focus {
+      border-color: var(--accent-bronze);
+      background-color: #FFFFFF;
+      outline: none;
+    }
+
+    .toolbar-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .toolbar-bar input, .toolbar-bar select {
+      width: auto;
+      min-width: 180px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 36px 16px;
+    }
+
+    /* Modal Dialog */
+    dialog {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: var(--surface-card);
+      color: var(--text-main);
+      width: min(480px, 92vw);
+      padding: 24px;
+      margin: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    dialog::backdrop {
+      background: rgba(32, 39, 37, 0.55);
+      backdrop-filter: blur(2px);
+    }
+
+    .dialog-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    /* Toast System */
+    #toast-container {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    .toast-msg {
+      background-color: var(--sidebar-bg);
+      color: #F4F1E9;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-left: 4px solid var(--accent-bronze);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .toast-msg.error {
+      border-left-color: var(--danger-color);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      #auth-screen { grid-template-columns: 1fr; }
+      .auth-hero { padding: 32px 24px; }
+      .auth-form-side { padding: 32px 20px; }
+      aside { transform: translateX(-100%); }
+      aside.open { transform: none; }
+      main { margin-left: 0; padding: 20px 16px; }
+      .menu-btn { display: inline-flex !important; }
+    }
+
+    .menu-btn {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       SECTION 1: PUBLIC AUTH & LANDING SCREEN
+       ========================================================================= -->
+  <div id="auth-screen">
+    <!-- Left Hero Side -->
+    <div class="auth-hero">
+      <div class="auth-hero-header">
+        <small><i class="bi bi-mortarboard me-1"></i> Imperial College Residential Services</small>
+        <h1>Hostel Allocation & Management System</h1>
+        <p>Comprehensive collegiate residential platform supporting applications, room allotment, bed occupancy analytics, and transparent hostel governance.</p>
+
+        <!-- 3D Architectural Preview Box -->
+        <div class="auth-3d-box" id="auth-3d-viewport"></div>
+        <div style="font-size: 11px; color: #a4aaa0; margin-top: 6px;">
+          <i class="bi bi-arrows-move me-1"></i> Interactive 3D College Residence Hall Model
+        </div>
+      </div>
+
+      <div style="font-size: 12px; color: #7d847c;">
+        &copy; 2026-27 Imperial College of Engineering & Technology. Academic Software Engineering Project.
+      </div>
+    </div>
+
+    <!-- Right Form Side -->
+    <div class="auth-form-side">
+      <div class="auth-tabs">
+        <button id="tab-login-btn" class="active" onclick="switchAuthTab('login')">Sign In</button>
+        <button id="tab-reg-btn" onclick="switchAuthTab('register')">Student Registration</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <div id="login-form-pane">
+        <form onsubmit="return handleLogin(event)">
+          <label>Email Address</label>
+          <input id="input-login-email" type="email" placeholder="name@college.edu" required>
+
+          <label>Password</label>
+          <input id="input-login-password" type="password" placeholder="••••••••" required>
+
+          <div style="margin-top: 18px;">
+            <button class="btn btn-bronze" style="width: 100%;">
+              <i class="bi bi-box-arrow-in-right"></i> Sign In to Portal
+            </button>
+          </div>
+        </form>
+
+        <!-- One-Click Demo Credentials -->
+        <div class="demo-chips-container">
+          <span style="font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+            Quick Demo Accounts:
+          </span>
+          <div class="demo-chips">
+            <span class="demo-chip" onclick="fillDemo('admin@college.edu','admin123')"><i class="bi bi-shield-check"></i> Admin</span>
+            <span class="demo-chip" onclick="fillDemo('warden1@college.edu','warden123')"><i class="bi bi-person-badge"></i> Warden (Ashoka)</span>
+            <span class="demo-chip" onclick="fillDemo('warden2@college.edu','warden123')"><i class="bi bi-person-badge"></i> Warden (Gargi)</span>
+            <span class="demo-chip" onclick="fillDemo('student@college.edu','student123')"><i class="bi bi-mortarboard"></i> Student (Pending)</span>
+            <span class="demo-chip" onclick="fillDemo('priya@college.edu','student123')"><i class="bi bi-check2-circle"></i> Student (Approved)</span>
+            <span class="demo-chip" onclick="fillDemo('aman@college.edu','student123')"><i class="bi bi-door-open"></i> Student (Resident)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Registration Form -->
+      <div id="register-form-pane" style="display: none;">
+        <form onsubmit="return handleRegister(event)">
+          <div class="grid-row-2">
+            <div>
+              <label>Full Name</label>
+              <input name="name" placeholder="Aarav Sharma" required minlength="3">
+            </div>
+            <div>
+              <label>Roll / Reg. No.</label>
+              <input name="reg" placeholder="CS2101" required pattern="[A-Za-z0-9]{4,12}">
+            </div>
+          </div>
+
+          <label>Email Address</label>
+          <input name="email" type="email" placeholder="aarav@college.edu" required>
+
+          <div class="grid-row-2">
+            <div>
+              <label>Phone (10 digits)</label>
+              <input name="phone" placeholder="9810012345" required pattern="[0-9]{10}">
+            </div>
+            <div>
+              <label>Gender</label>
+              <select name="gender">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid-row-2">
+            <div>
+              <label>Department</label>
+              <input name="dept" placeholder="Computer Science" required>
+            </div>
+            <div>
+              <label>Year</label>
+              <select name="year">
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+          </div>
+
+          <label>Password (Min 6)</label>
+          <input name="pw" type="password" required minlength="6">
+
+          <div style="margin-top: 18px;">
+            <button class="btn btn-bronze" style="width: 100%;">
+              <i class="bi bi-person-check"></i> Register Account
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       SECTION 2: AUTHENTICATED PORTAL APPLICATION
+       ========================================================================= -->
+  <div id="app-screen">
+    <aside id="app-sidebar"></aside>
+
+    <main>
+      <header class="top-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="btn btn-outline btn-sm menu-btn" onclick="document.getElementById('app-sidebar').classList.toggle('open')">
+            <i class="bi bi-list fs-5"></i>
+          </button>
+          <h2 id="view-title">Overview</h2>
+        </div>
+
+        <div id="user-display" class="user-pill"></div>
+      </header>
+
+      <div id="view-content"></div>
+    </main>
+  </div>
+
+  <!-- Modal Dialog & Toast Container -->
+  <dialog id="app-dialog"></dialog>
+  <div id="toast-container"></div>
+
+  <!-- =========================================================================
+       SECTION 3: JAVASCRIPT STATE, CONTROLLERS & 3D VIEWER
+       ========================================================================= -->
+  <script>
+    /* Global Storage Key & Variables */
+    const STORAGE_KEY = 'hms_db_v2';
+    let DB = null;
+    let currentUser = null;
+    let currentView = 'overview';
+    let activeCharts = [];
+    let threeViewerInstance = null;
+
+    /* Utility Helpers */
+    const $ = id => document.getElementById(id);
+    const escapeHtml = str => String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+    const nextId = items => items.reduce((max, item) => Math.max(max, item.id || 0), 0) + 1;
+    const getTodayDate = () => new Date().toISOString().slice(0, 10);
+    const ACTIVE_ALLOC_STATUSES = ['Allocated', 'Checked-In'];
+
+    /* -------------------------------------------------------------------------
+       1. Database Initial Seed Data
+       ------------------------------------------------------------------------- */
+    function getInitialDatabase() {
+      const makeUser = (id, name, email, role, extra = {}) => ({
+        id, name, email, pw: role + '123', role, ...extra
+      });
+
+      const users = [
+        makeUser(1, 'Dean of Student Affairs', 'admin@college.edu', 'admin'),
+        makeUser(2, 'Dr. Rajeshwar Sen', 'warden1@college.edu', 'warden', { hid: 1, phone: '9800011223' }),
+        makeUser(3, 'Prof. Arundhati Das', 'warden2@college.edu', 'warden', { hid: 2, phone: '9800044556' }),
+        makeUser(4, 'Rahul Mehta', 'student@college.edu', 'student', { reg: 'CS2101', phone: '9810011010', dept: 'Computer Science', year: 2, gender: 'Male' }),
+        makeUser(5, 'Priya Nair', 'priya@college.edu', 'student', { reg: 'EC2102', phone: '9810022020', dept: 'Electronics', year: 3, gender: 'Female' }),
+        makeUser(6, 'Aman Verma', 'aman@college.edu', 'student', { reg: 'ME2103', phone: '9810033030', dept: 'Mechanical', year: 3, gender: 'Male' }),
+        makeUser(7, 'Kiran Rao', 'kiran@college.edu', 'student', { reg: 'CS2104', phone: '9810044040', dept: 'Computer Science', year: 1, gender: 'Male' }),
+        makeUser(8, 'Ananya Sharma', 'ananya@college.edu', 'student', { reg: 'BT2105', phone: '9810055050', dept: 'Biotechnology', year: 2, gender: 'Female' })
+      ];
+
+      const hostels = [
+        { id: 1, name: 'Ashoka Hall', type: 'Boys', addr: 'North Campus, Gate 2', desc: 'Boys residence hall with sports lawn, reading lounges, and high-speed Wi-Fi.' },
+        { id: 2, name: 'Gargi Hall', type: 'Girls', addr: 'South Campus, Promenade Way', desc: 'Girls residence hall with 24/7 security, central courtyard, and study zones.' },
+        { id: 3, name: 'Tagore Hall', type: 'Co-ed', addr: 'East Campus, Innovation Quad', desc: 'Postgraduate and international scholars residence.' }
+      ];
+
+      const rooms = [];
+      let roomId = 1;
+      const roomTypes = ['Single', 'Double', 'Double', 'Triple', 'Triple', 'Dormitory'];
+      const capMap = { Single: 1, Double: 2, Triple: 3, Dormitory: 6 };
+
+      // Ashoka Hall (hid: 1, 101-106)
+      roomTypes.forEach((t, i) => {
+        rooms.push({ id: roomId++, hid: 1, no: String(101 + i), type: t, cap: capMap[t], occ: 0, status: 'Available' });
+      });
+
+      // Gargi Hall (hid: 2, 201-206)
+      roomTypes.forEach((t, i) => {
+        rooms.push({ id: roomId++, hid: 2, no: String(201 + i), type: t, cap: capMap[t], occ: 0, status: 'Available' });
+      });
+
+      // Tagore Hall (hid: 3, 301-304)
+      ['Single', 'Double', 'Triple', 'Double'].forEach((t, i) => {
+        rooms.push({ id: roomId++, hid: 3, no: String(301 + i), type: t, cap: capMap[t], occ: 0, status: 'Available' });
+      });
+
+      // Set initial occupancies
+      rooms[0].occ = 1; rooms[0].status = 'Full'; // Ashoka 101: Aman
+      rooms[1].occ = 1;                           // Ashoka 102: Kiran
+      rooms[7].occ = 1;                           // Gargi 202: Ananya
+
+      const apps = [
+        { id: 1, sid: 4, hid: 1, type: 'Single', date: getTodayDate(), status: 'Pending', rem: '' },
+        { id: 2, sid: 5, hid: 2, type: 'Double', date: getTodayDate(), status: 'Approved', rem: 'Verified merit credentials. Eligible.' },
+        { id: 3, sid: 6, hid: 1, type: 'Single', date: getTodayDate(), status: 'Allocated', rem: 'Approved.' },
+        { id: 4, sid: 7, hid: 1, type: 'Double', date: getTodayDate(), status: 'Allocated', rem: 'Approved.' },
+        { id: 5, sid: 8, hid: 2, type: 'Double', date: getTodayDate(), status: 'Allocated', rem: 'Approved.' }
+      ];
+
+      const allocs = [
+        { id: 1, sid: 6, rid: 1, aid: 3, date: getTodayDate(), in: getTodayDate(), status: 'Checked-In' },
+        { id: 2, sid: 7, rid: 2, aid: 4, date: getTodayDate(), in: null, status: 'Allocated' },
+        { id: 3, sid: 8, rid: 8, aid: 5, date: getTodayDate(), in: getTodayDate(), status: 'Checked-In' }
+      ];
+
+      const comps = [
+        { id: 1, sid: 6, title: 'Water leakage in washroom', desc: 'Sink water pressure is low in 1st floor washroom.', date: getTodayDate(), status: 'Open', rem: '' },
+        { id: 2, sid: 8, title: 'Wi-Fi connection drop on 2nd floor', desc: 'Router disconnects intermittently during evening study hours.', date: getTodayDate(), status: 'In Progress', rem: 'IT department investigating router.' }
+      ];
+
+      const anns = [
+        { id: 1, title: 'Hostel Allotment & Onboarding 2026-27', desc: 'Online accommodation applications are officially open for all registered scholars.', date: getTodayDate(), hid: 0 },
+        { id: 2, title: 'North Campus Infrastructure Maintenance', desc: 'Water supply disruption scheduled for Saturday 10:00 AM - 1:00 PM.', date: getTodayDate(), hid: 1 },
+        { id: 3, title: 'Extended Library Hours during Mid-Sem', desc: 'Gargi Hall central study lounges will remain open until midnight.', date: getTodayDate(), hid: 2 }
+      ];
+
+      return { users, hostels, rooms, apps, allocs, comps, anns };
+    }
+
+    function loadDatabase() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored ? JSON.parse(stored) : getInitialDatabase();
+      } catch (e) {
+        return getInitialDatabase();
+      }
+    }
+
+    function saveDatabase() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+      } catch (e) {
+        console.error('Storage save failed:', e);
+      }
+    }
+
+    DB = loadDatabase();
+
+    /* -------------------------------------------------------------------------
+       2. Toast Notifications & Modals
+       ------------------------------------------------------------------------- */
+    function showToast(message, isError = false) {
+      const container = $('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg' + (isError ? ' error' : '');
+      toast.innerHTML = `<i class="bi ${isError ? 'bi-exclamation-circle' : 'bi-check2-circle'} me-1"></i> ${escapeHtml(message)}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3200);
+    }
+
+    function showDialogForm(title, fields, onSubmit, submitLabel = 'Save') {
+      const dlg = $('app-dialog');
+      dlg.innerHTML = `
+        <form method="dialog" id="dialog-form">
+          <h3 style="font-size: 16px; margin-bottom: 14px;">${title}</h3>
+          ${fields.map(f => `
+            <label>${f.label}</label>
+            ${f.options ? `
+              <select name="${f.name}">
+                ${f.options.map(opt => {
+                  const val = Array.isArray(opt) ? opt[0] : opt;
+                  const lbl = Array.isArray(opt) ? opt[1] : opt;
+                  return `<option value="${escapeHtml(val)}" ${val == f.value ? 'selected' : ''}>${escapeHtml(lbl)}</option>`;
+                }).join('')}
+              </select>
+            ` : f.type === 'textarea' ? `
+              <textarea name="${f.name}" rows="3" ${f.required ? 'required' : ''}>${escapeHtml(f.value || '')}</textarea>
+            ` : `
+              <input name="${f.name}" type="${f.type || 'text'}" value="${escapeHtml(f.value || '')}" ${f.required ? 'required' : ''}>
+            `}
+          `).join('')}
+          <div class="dialog-actions">
+            <button type="button" class="btn btn-outline" onclick="$('app-dialog').close()">Cancel</button>
+            <button type="submit" class="btn btn-bronze">${submitLabel}</button>
+          </div>
+        </form>
+      `;
+
+      $('dialog-form').onsubmit = e => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target));
+        const err = onSubmit(data);
+        if (err) {
+          showToast(err, true);
+        } else {
+          dlg.close();
+          saveDatabase();
+          navigateTo(currentView);
+        }
+      };
+      dlg.showModal();
+    }
+
+    function confirmAction(message, onConfirm) {
+      const dlg = $('app-dialog');
+      dlg.innerHTML = `
+        <h3 style="font-size: 16px; margin-bottom: 10px;">Please Confirm</h3>
+        <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.5;">${escapeHtml(message)}</p>
+        <div class="dialog-actions">
+          <button class="btn btn-outline" onclick="$('app-dialog').close()">Cancel</button>
+          <button class="btn btn-danger-outline" id="dlg-confirm-btn">Confirm Action</button>
+        </div>
+      `;
+      $('dlg-confirm-btn').onclick = () => {
+        dlg.close();
+        const err = onConfirm();
+        if (err) showToast(err, true);
+        else {
+          saveDatabase();
+          navigateTo(currentView);
+        }
+      };
+      dlg.showModal();
+    }
+
+    /* -------------------------------------------------------------------------
+       3. Authentication & Session Handlers
+       ------------------------------------------------------------------------- */
+    function switchAuthTab(tab) {
+      $('login-form-pane').style.display = tab === 'login' ? 'block' : 'none';
+      $('register-form-pane').style.display = tab === 'register' ? 'block' : 'none';
+      $('tab-login-btn').className = tab === 'login' ? 'active' : '';
+      $('tab-reg-btn').className = tab === 'register' ? 'active' : '';
+    }
+
+    function fillDemo(email, pw) {
+      switchAuthTab('login');
+      $('input-login-email').value = email;
+      $('input-login-password').value = pw;
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = $('input-login-email').value.trim().toLowerCase();
+      const password = $('input-login-password').value;
+
+      const user = DB.users.find(u => u.email === email && u.pw === password);
+      if (!user) {
+        showToast('Invalid email address or password.', true);
+        return false;
+      }
+
+      currentUser = user;
+      currentView = 'overview';
+      $('auth-screen').style.display = 'none';
+      $('app-screen').style.display = 'block';
+      navigateTo(currentView);
+      showToast(`Welcome back, ${user.name}!`);
+      return false;
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const form = Object.fromEntries(new FormData(e.target));
+      form.email = form.email.trim().toLowerCase();
+      form.reg = form.reg.trim().toUpperCase();
+
+      if (DB.users.some(u => u.email === form.email)) {
+        showToast('An account with this email address already exists.', true);
+        return false;
+      }
+      if (DB.users.some(u => u.reg === form.reg)) {
+        showToast('This registration number is already registered.', true);
+        return false;
+      }
+
+      DB.users.push({
+        id: nextId(DB.users),
+        name: form.name.trim(),
+        email: form.email,
+        pw: form.pw,
+        role: 'student',
+        reg: form.reg,
+        phone: form.phone,
+        dept: form.dept,
+        year: +form.year,
+        gender: form.gender
+      });
+
+      saveDatabase();
+      showToast('Registration successful! Please sign in with your credentials.');
+      e.target.reset();
+      switchAuthTab('login');
+      return false;
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      $('app-screen').style.display = 'none';
+      $('auth-screen').style.display = 'grid';
+      showToast('You have been signed out securely.');
+    }
+
+    /* -------------------------------------------------------------------------
+       4. Navigation, Data Queries & Business Invariants
+       ------------------------------------------------------------------------- */
+    const NAVIGATION_CONFIG = {
+      admin: [
+        ['overview', 'Overview', 'bi-grid-1x2'],
+        ['sheets', 'Live Database Sheet', 'bi-table'],
+        ['students', 'Students', 'bi-people'],
+        ['hostels', 'Hostels', 'bi-building'],
+        ['rooms', 'Rooms & Beds', 'bi-door-open'],
+        ['apps', 'Applications', 'bi-file-earmark-text'],
+        ['alloc', 'Room Allocation', 'bi-key'],
+        ['comps', 'Complaints', 'bi-chat-left-dots'],
+        ['anns', 'Announcements', 'bi-megaphone']
+      ],
+      student: [
+        ['overview', 'Overview', 'bi-grid-1x2'],
+        ['profile', 'My Profile', 'bi-person'],
+        ['apply', 'Apply for Hostel', 'bi-pencil-square'],
+        ['my_apps', 'My Applications', 'bi-file-earmark-check'],
+        ['room', 'My Room (3D)', 'bi-door-open'],
+        ['comps', 'Complaints', 'bi-chat-left-dots'],
+        ['anns', 'Announcements', 'bi-megaphone']
+      ],
+      warden: [
+        ['overview', 'Overview', 'bi-grid-1x2'],
+        ['sheets', 'Hostel Live Sheet', 'bi-table'],
+        ['rooms', 'Room Occupancy', 'bi-door-open'],
+        ['students', 'Resident Scholars', 'bi-people'],
+        ['checkio', 'Check-in / Check-out', 'bi-box-arrow-in-right'],
+        ['comps', 'Complaints', 'bi-chat-left-dots'],
+        ['anns', 'Announcements', 'bi-megaphone']
+      ]
+    };
+
+    function navigateTo(viewKey) {
+      currentView = viewKey;
+      $('app-sidebar').classList.remove('open');
+
+      const navList = NAVIGATION_CONFIG[currentUser.role];
+      const navItem = navList.find(n => n[0] === viewKey) || navList[0];
+
+      // Render Sidebar
+      $('app-sidebar').innerHTML = `
+        <div class="brand-header">
+          <i class="bi bi-buildings-fill text-warning me-1"></i> Residential Services
+          <small>${currentUser.role} portal</small>
+        </div>
+        ${navList.map(([k, label, icon]) => `
+          <a class="${k === viewKey ? 'active' : ''}" onclick="navigateTo('${k}')">
+            <i class="bi ${icon}"></i> ${label}
+          </a>
+        `).join('')}
+        <a style="margin-top: auto; color: #d99a91;" onclick="handleLogout()">
+          <i class="bi bi-box-arrow-right"></i> Sign Out
+        </a>
+      `;
+
+      $('view-title').textContent = navItem[1];
+      $('user-display').innerHTML = `
+        <span class="user-avatar" style="width: 24px; height: 24px; border-radius: 50%; background: var(--sidebar-bg); color: var(--accent-bronze); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;">
+          ${escapeHtml(currentUser.name[0])}
+        </span>
+        <span style="font-weight: 500;">${escapeHtml(currentUser.name)}</span>
+        <span class="badge badge-neutral" style="font-size: 10px;">${currentUser.role}</span>
+      `;
+
+      // Clear existing Chart.js instances
+      activeCharts.forEach(c => c.destroy());
+      activeCharts = [];
+
+      // Render View
+      $('view-content').innerHTML = VIEW_RENDERERS[viewKey]();
+      if (VIEW_RENDERERS[viewKey + '_post']) {
+        VIEW_RENDERERS[viewKey + '_post']();
+      }
+    }
+
+    /* Helper Queries */
+    const getStudents = () => DB.users.filter(u => u.role === 'student');
+    const getUserName = id => escapeHtml((DB.users.find(u => u.id === id) || {}).name || 'Unknown');
+    const getHostelName = id => escapeHtml((DB.hostels.find(h => h.id === id) || {}).name || 'None');
+    const getRoom = id => DB.rooms.find(r => r.id === id);
+    const getRoomLabel = id => {
+      const r = getRoom(id);
+      return r ? `${getHostelName(r.hid)} &bull; Room ${escapeHtml(r.no)}` : 'None';
+    };
+    const getActiveAlloc = sid => DB.allocs.find(a => a.sid === sid && ACTIVE_ALLOC_STATUSES.includes(a.status));
+    const getActiveApp = sid => DB.apps.find(a => a.sid === sid && ['Pending', 'Approved'].includes(a.status));
+    const getWardenScopeRooms = () => currentUser.role === 'warden' ? DB.rooms.filter(r => r.hid === currentUser.hid) : DB.rooms;
+    const getWardenScopeAllocs = () => {
+      const rIds = new Set(getWardenScopeRooms().map(r => r.id));
+      return DB.allocs.filter(a => rIds.has(a.rid));
+    };
+
+    function renderStatusBadge(status) {
+      const map = {
+        'Approved': 'badge-approved',
+        'Allocated': 'badge-allocated',
+        'Checked-In': 'badge-checked-in',
+        'Resolved': 'badge-resolved',
+        'Available': 'badge-available',
+        'Pending': 'badge-pending',
+        'In Progress': 'badge-in-progress',
+        'Open': 'badge-open',
+        'Rejected': 'badge-rejected',
+        'Cancelled': 'badge-cancelled',
+        'Full': 'badge-full',
+        'Maintenance': 'badge-maintenance'
+      };
+      const cls = map[status] || 'badge-neutral';
+      return `<span class="badge ${cls}">${escapeHtml(status)}</span>`;
+    }
+
+    function renderTable(headers, rows, emptyMsg = 'No records found.') {
+      if (!rows || rows.length === 0) {
+        return `<div class="empty-state">${emptyMsg}</div>`;
+      }
+      return `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    /* Core Allocation & Release Engine */
+    function releaseRoomBed(alloc, newStatus) {
+      const room = getRoom(alloc.rid);
+      if (room) {
+        room.occ = Math.max(0, room.occ - 1);
+        if (room.status === 'Full') room.status = 'Available';
+      }
+      alloc.status = newStatus;
+      if (newStatus === 'Checked-Out') alloc.out = getTodayDate();
+    }
+
+    function allocateStudentRoom(appId, roomId) {
+      const app = DB.apps.find(a => a.id === appId);
+      const room = getRoom(+roomId);
+
+      if (!room) return 'Please choose a valid room.';
+      if (!app || app.status !== 'Approved') return 'Only approved applications can receive a room allocation.';
+      if (getActiveAlloc(app.sid)) return 'This student already holds an active room allocation.';
+      if (room.status === 'Maintenance') return 'Selected room is under maintenance.';
+      if (room.occ >= room.cap) return 'Selected room is already at full capacity.';
+
+      room.occ++;
+      if (room.occ >= room.cap) room.status = 'Full';
+
+      app.status = 'Allocated';
+      DB.allocs.push({
+        id: nextId(DB.allocs),
+        sid: app.sid,
+        rid: room.id,
+        aid: app.id,
+        date: getTodayDate(),
+        in: null,
+        status: 'Allocated'
+      });
+      return null;
+    }
+
+    /* -------------------------------------------------------------------------
+       5. View Renderers (Student, Admin, Warden Portals)
+       ------------------------------------------------------------------------- */
+    const VIEW_RENDERERS = {
+      // OVERVIEW DASHBOARDS
+      overview() {
+        if (currentUser.role === 'student') {
+          const alloc = getActiveAlloc(currentUser.id);
+          const latestApp = DB.apps.filter(a => a.sid === currentUser.id).slice(-1)[0];
+          const activeComps = DB.comps.filter(c => c.sid === currentUser.id && c.status !== 'Closed').length;
+
+          return `
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="label">Latest Application</div>
+                <div class="val" style="font-size: 20px;">${latestApp ? renderStatusBadge(latestApp.status) : 'None'}</div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Hostel & Room</div>
+                <div class="val" style="font-size: 18px;">${alloc ? getRoomLabel(alloc.rid) : 'Unassigned'}</div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Active Complaints</div>
+                <div class="val">${activeComps}</div>
+              </div>
+              <div class="metric-card">
+                <div class="label">Academic Year</div>
+                <div class="val">Year ${currentUser.year}</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h3>Campus & Hostel Notices</h3>
+              </div>
+              ${VIEW_RENDERERS.renderAnnouncementsList(3)}
+            </div>
+          `;
+        }
+
+        // Admin & Warden Overview
+        const rooms = getWardenScopeRooms();
+        const totalCapacity = rooms.reduce((sum, r) => sum + r.cap, 0);
+        const occupiedBeds = rooms.reduce((sum, r) => sum + r.occ, 0);
+        const availableBeds = Math.max(0, totalCapacity - occupiedBeds);
+        const countApps = st => DB.apps.filter(a => a.status === st).length;
+
+        return `
+          <div class="metrics-grid">
+            ${currentUser.role === 'admin' ? `
+              <div class="metric-card"><div class="label">Total Students</div><div class="val">${getStudents().length}</div></div>
+              <div class="metric-card"><div class="label">Total Hostels</div><div class="val">${DB.hostels.length}</div></div>
+            ` : ''}
+            <div class="metric-card"><div class="label">Total Rooms</div><div class="val">${rooms.length}</div></div>
+            <div class="metric-card"><div class="label">Bed Capacity</div><div class="val">${totalCapacity}</div></div>
+            <div class="metric-card"><div class="label">Occupied Beds</div><div class="val" style="color: var(--accent-bronze);">${occupiedBeds}</div></div>
+            <div class="metric-card"><div class="label">Available Beds</div><div class="val" style="color: var(--success-color);">${availableBeds}</div></div>
+            ${currentUser.role === 'admin' ? `
+              <div class="metric-card"><div class="label">Pending Apps</div><div class="val">${countApps('Pending')}</div></div>
+              <div class="metric-card"><div class="label">Approved Apps</div><div class="val">${countApps('Approved')}</div></div>
+            ` : ''}
+            <div class="metric-card"><div class="label">Open Complaints</div><div class="val">${DB.comps.filter(c => c.status === 'Open').length}</div></div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="panel">
+              <div class="panel-header"><h3>Hostel Occupancy vs Design Capacity</h3></div>
+              <canvas id="chart-occupancy"></canvas>
+            </div>
+            ${currentUser.role === 'admin' ? `
+              <div class="panel">
+                <div class="panel-header"><h3>Application Breakdown</h3></div>
+                <canvas id="chart-applications"></canvas>
+              </div>
+            ` : ''}
+            <div class="panel">
+              <div class="panel-header"><h3>Bed Availability Ratio</h3></div>
+              <canvas id="chart-availability"></canvas>
+            </div>
+          </div>
+        `;
+      },
+
+      overview_post() {
+        if (currentUser.role === 'student') return;
+
+        const hostels = currentUser.role === 'admin' ? DB.hostels : DB.hostels.filter(h => h.id === currentUser.hid);
+        const rooms = getWardenScopeRooms();
+
+        // Chart 1: Occupancy Bar Chart
+        const ctx1 = $('chart-occupancy');
+        if (ctx1) {
+          activeCharts.push(new Chart(ctx1, {
+            type: 'bar',
+            data: {
+              labels: hostels.map(h => h.name),
+              datasets: [
+                {
+                  label: 'Occupied Beds',
+                  data: hostels.map(h => DB.rooms.filter(r => r.hid === h.id).reduce((s, r) => s + r.occ, 0)),
+                  backgroundColor: '#A68A64'
+                },
+                {
+                  label: 'Total Capacity',
+                  data: hostels.map(h => DB.rooms.filter(r => r.hid === h.id).reduce((s, r) => s + r.cap, 0)),
+                  backgroundColor: '#DCE3DC'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { position: 'top' } }
+            }
+          }));
+        }
+
+        // Chart 2: Application Breakdown
+        if (currentUser.role === 'admin') {
+          const ctx2 = $('chart-applications');
+          if (ctx2) {
+            const stList = ['Pending', 'Approved', 'Rejected', 'Allocated', 'Cancelled'];
+            activeCharts.push(new Chart(ctx2, {
+              type: 'doughnut',
+              data: {
+                labels: stList,
+                datasets: [{
+                  data: stList.map(s => DB.apps.filter(a => a.status === s).length),
+                  backgroundColor: ['#8c6a28', '#A68A64', '#B4574B', '#202725', '#DCE3DC']
+                }]
+              }
+            }));
+          }
+        }
+
+        // Chart 3: Bed Availability
+        const ctx3 = $('chart-availability');
+        if (ctx3) {
+          const occ = rooms.reduce((s, r) => s + r.occ, 0);
+          const free = rooms.reduce((s, r) => s + r.cap - r.occ, 0);
+          activeCharts.push(new Chart(ctx3, {
+            type: 'doughnut',
+            data: {
+              labels: ['Available Beds', 'Occupied Beds'],
+              datasets: [{
+                data: [free, occ],
+                backgroundColor: ['#DCE3DC', '#A68A64']
+              }]
+            }
+          }));
+        }
+      },
+
+      // LIVE SPREADSHEET EDITOR (ADMIN & WARDEN)
+      sheets() {
+        const isAdmin = currentUser.role === 'admin';
+        window._sheetTab = window._sheetTab || (isAdmin ? 'students' : 'rooms');
+
+        const tabs = isAdmin
+          ? [['students', 'Students'], ['hostels', 'Hostels'], ['rooms', 'Rooms'], ['apps', 'Applications'], ['allocs', 'Allocations'], ['comps', 'Complaints']]
+          : [['rooms', 'My Hostel Rooms'], ['allocs', 'Residents & Allocations'], ['comps', 'Complaints']];
+
+        let content = '';
+        if (window._sheetTab === 'students') {
+          content = renderTable(
+            ['Roll No', 'Full Name', 'Phone', 'Department', 'Year', 'Gender'],
+            getStudents().map(s => [
+              s.reg,
+              `<input class="sheet-cell" value="${escapeHtml(s.name)}" onchange="updateCell('users', ${s.id}, 'name', this.value)">`,
+              `<input class="sheet-cell" value="${escapeHtml(s.phone)}" onchange="updateCell('users', ${s.id}, 'phone', this.value)">`,
+              `<input class="sheet-cell" value="${escapeHtml(s.dept)}" onchange="updateCell('users', ${s.id}, 'dept', this.value)">`,
+              `<input class="sheet-cell" type="number" min="1" max="4" value="${s.year}" onchange="updateCell('users', ${s.id}, 'year', this.value)">`,
+              escapeHtml(s.gender)
+            ])
+          );
+        } else if (window._sheetTab === 'hostels') {
+          content = renderTable(
+            ['Hostel Name', 'Type', 'Campus Address', 'Rooms'],
+            DB.hostels.map(h => [
+              `<input class="sheet-cell" value="${escapeHtml(h.name)}" onchange="updateCell('hostels', ${h.id}, 'name', this.value)">`,
+              escapeHtml(h.type),
+              `<input class="sheet-cell" value="${escapeHtml(h.addr)}" onchange="updateCell('hostels', ${h.id}, 'addr', this.value)">`,
+              DB.rooms.filter(r => r.hid === h.id).length
+            ])
+          );
+        } else if (window._sheetTab === 'rooms') {
+          const rooms = getWardenScopeRooms();
+          content = renderTable(
+            ['Hostel', 'Room No', 'Type', 'Capacity', 'Occupied', 'Free Beds', 'Status'],
+            rooms.map(r => [
+              getHostelName(r.hid),
+              r.no,
+              r.type,
+              `<input class="sheet-cell" type="number" min="${r.occ}" max="12" value="${r.cap}" onchange="updateCell('rooms', ${r.id}, 'cap', this.value)">`,
+              r.occ,
+              r.cap - r.occ,
+              `<select class="sheet-cell" onchange="updateCell('rooms', ${r.id}, 'status', this.value)">
+                <option value="Available" ${r.status === 'Available' ? 'selected' : ''}>Available</option>
+                <option value="Maintenance" ${r.status === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+              </select>`
+            ])
+          );
+        } else if (window._sheetTab === 'apps') {
+          content = renderTable(
+            ['Student', 'Preferred Hall', 'Room Type', 'Date', 'Status', 'Admin Remarks'],
+            DB.apps.map(a => [
+              getUserName(a.sid),
+              getHostelName(a.hid),
+              a.type,
+              a.date,
+              `<select class="sheet-cell" onchange="updateCell('apps', ${a.id}, 'status', this.value)">
+                ${['Pending', 'Approved', 'Rejected', 'Allocated', 'Cancelled'].map(st => `<option value="${st}" ${a.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+              </select>`,
+              `<input class="sheet-cell" value="${escapeHtml(a.rem || '')}" onchange="updateCell('apps', ${a.id}, 'rem', this.value)">`
+            ])
+          );
+        } else if (window._sheetTab === 'allocs') {
+          const allocs = currentUser.role === 'warden' ? getWardenScopeAllocs() : DB.allocs;
+          content = renderTable(
+            ['Resident', 'Room', 'Allocated Date', 'Status'],
+            allocs.map(al => [
+              getUserName(al.sid),
+              getRoomLabel(al.rid),
+              al.date,
+              renderStatusBadge(al.status)
+            ])
+          );
+        } else if (window._sheetTab === 'comps') {
+          const comps = currentUser.role === 'warden' ? DB.comps.filter(c => (getRoom(getActiveAlloc(c.sid)?.rid) || {}).hid === currentUser.hid) : DB.comps;
+          content = renderTable(
+            ['Student', 'Subject', 'Date', 'Status', 'Remarks'],
+            comps.map(c => [
+              getUserName(c.sid),
+              escapeHtml(c.title),
+              c.date,
+              `<select class="sheet-cell" onchange="updateCell('comps', ${c.id}, 'status', this.value)">
+                ${['Open', 'In Progress', 'Resolved', 'Closed'].map(st => `<option value="${st}" ${c.status === st ? 'selected' : ''}>${st}</option>`).join('')}
+              </select>`,
+              `<input class="sheet-cell" value="${escapeHtml(c.rem || '')}" onchange="updateCell('comps', ${c.id}, 'rem', this.value)">`
+            ])
+          );
+        }
+
+        return `
+          <div class="panel">
+            <div class="toolbar-bar">
+              <span class="badge badge-neutral"><i class="bi bi-table me-1"></i> Live Database Sheet</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                ${tabs.map(([k, label]) => `
+                  <button class="btn btn-sm ${window._sheetTab === k ? 'btn-bronze' : 'btn-outline'}" 
+                          onclick="window._sheetTab='${k}'; navigateTo('sheets')">
+                    ${label}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px;">
+              <i class="bi bi-info-circle me-1"></i> Values in cells save automatically when edited. Wardens have edit permissions strictly for their assigned hostel.
+            </p>
+            ${content}
+          </div>
+        `;
+      },
+
+      // STUDENTS DIRECTORY
+      students() {
+        const query = (window._searchStudentQuery || '').toLowerCase();
+        let list = getStudents();
+
+        if (currentUser.role === 'warden') {
+          const residentIds = new Set(getWardenScopeAllocs().filter(a => ACTIVE_ALLOC_STATUSES.includes(a.status)).map(a => a.sid));
+          list = list.filter(s => residentIds.has(s.id));
+        }
+
+        list = list.filter(s => (s.name + s.reg + s.dept).toLowerCase().includes(query));
+
+        return `
+          <div class="toolbar-bar">
+            <input placeholder="Search by name, roll no, department..." value="${escapeHtml(window._searchStudentQuery || '')}"
+                   oninput="window._searchStudentQuery=this.value; clearTimeout(window._stTimer); window._stTimer=setTimeout(()=>navigateTo('students'), 250)">
+          </div>
+
+          <div class="panel">
+            ${renderTable(
+              ['Roll No', 'Full Name', 'Phone', 'Department', 'Year', 'Room Allocation', currentUser.role === 'admin' ? 'Action' : ''],
+              list.map(s => {
+                const alloc = getActiveAlloc(s.id);
+                return [
+                  s.reg,
+                  escapeHtml(s.name),
+                  escapeHtml(s.phone),
+                  escapeHtml(s.dept),
+                  s.year,
+                  alloc ? `${getRoomLabel(alloc.rid)} ${renderStatusBadge(alloc.status)}` : '<span class="text-muted small">None</span>',
+                  currentUser.role === 'admin' ? `<button class="btn btn-danger-outline btn-sm" onclick="deleteStudentRecord(${s.id})"><i class="bi bi-trash"></i></button>` : ''
+                ];
+              }),
+              'No matching students found.'
+            )}
+          </div>
+        `;
+      },
+
+      // HOSTELS MANAGEMENT (ADMIN)
+      hostels() {
+        return `
+          <div class="toolbar-bar">
+            <button class="btn btn-bronze btn-sm" onclick="openHostelDialog()">
+              <i class="bi bi-plus-lg"></i> Add New Hostel
+            </button>
+          </div>
+
+          <div class="panel">
+            ${renderTable(
+              ['Hostel Name', 'Type', 'Campus Address', 'Rooms', 'Assigned Warden', 'Actions'],
+              DB.hostels.map(h => [
+                `<strong>${escapeHtml(h.name)}</strong>`,
+                renderStatusBadge(h.type),
+                escapeHtml(h.addr),
+                DB.rooms.filter(r => r.hid === h.id).length,
+                escapeHtml((DB.users.find(u => u.hid === h.id) || {}).name || 'Unassigned'),
+                `<div style="display: flex; gap: 4px;">
+                  <button class="btn btn-outline btn-sm" onclick="openHostelDialog(${h.id})"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-danger-outline btn-sm" onclick="deleteHostelBlock(${h.id})"><i class="bi bi-trash"></i></button>
+                </div>`
+              ])
+            )}
+          </div>
+        `;
+      },
+
+      // ROOMS INVENTORY
+      rooms() {
+        const isAdmin = currentUser.role === 'admin';
+        const filterHostel = window._roomFilterHostel || '';
+        let list = getWardenScopeRooms();
+        if (filterHostel) list = list.filter(r => r.hid == filterHostel);
+
+        return `
+          <div class="toolbar-bar">
+            ${isAdmin ? `
+              <button class="btn btn-bronze btn-sm" onclick="openRoomDialog()">
+                <i class="bi bi-plus-lg"></i> Add Room
+              </button>
+              <select onchange="window._roomFilterHostel=this.value; navigateTo('rooms')">
+                <option value="">All Hostels</option>
+                ${DB.hostels.map(h => `<option value="${h.id}" ${h.id == filterHostel ? 'selected' : ''}>${escapeHtml(h.name)}</option>`).join('')}
+              </select>
+            ` : ''}
+          </div>
+
+          <div class="panel">
+            ${renderTable(
+              ['Hostel', 'Room No', 'Type', 'Capacity', 'Occupied', 'Free Beds', 'Status', isAdmin ? 'Actions' : ''],
+              list.map(r => [
+                getHostelName(r.hid),
+                `<strong>${r.no}</strong>`,
+                r.type,
+                r.cap,
+                r.occ,
+                `<span class="badge ${r.cap - r.occ > 0 ? 'badge-available' : 'badge-full'}">${r.cap - r.occ} Free</span>`,
+                renderStatusBadge(r.status),
+                isAdmin ? `
+                  <div style="display: flex; gap: 4px;">
+                    <button class="btn btn-outline btn-sm" onclick="openRoomDialog(${r.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-danger-outline btn-sm" onclick="deleteRoomItem(${r.id})"><i class="bi bi-trash"></i></button>
+                  </div>
+                ` : ''
+              ])
+            )}
+          </div>
+        `;
+      },
+
+      // APPLICATIONS REVIEW
+      apps() {
+        return `
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Hostel Accommodation Applications</h3>
+            </div>
+            ${renderTable(
+              ['Student', 'Roll No', 'Preferred Hall', 'Room Type', 'Applied Date', 'Status', 'Remarks', 'Action'],
+              DB.apps.map(a => {
+                const s = DB.users.find(u => u.id === a.sid) || {};
+                return [
+                  escapeHtml(s.name || 'Unknown'),
+                  s.reg || '-',
+                  getHostelName(a.hid),
+                  a.type,
+                  a.date,
+                  renderStatusBadge(a.status),
+                  escapeHtml(a.rem || 'None'),
+                  a.status === 'Pending' ? `
+                    <div style="display: flex; gap: 4px;">
+                      <button class="btn btn-bronze btn-sm" onclick="decideApplication(${a.id}, 'Approved')">Approve</button>
+                      <button class="btn btn-danger-outline btn-sm" onclick="decideApplication(${a.id}, 'Rejected')">Reject</button>
+                    </div>
+                  ` : a.status === 'Approved' ? `
+                    <button class="btn btn-outline btn-sm" onclick="navigateTo('alloc')">Allocate</button>
+                  ` : '<span class="text-muted small">&mdash;</span>'
+                ];
+              })
+            )}
+          </div>
+        `;
+      },
+
+      // ROOM ALLOCATION ENGINE
+      alloc() {
+        const approvedApps = DB.apps.filter(a => a.status === 'Approved');
+        const activeAllocs = DB.allocs.filter(a => ACTIVE_ALLOC_STATUSES.includes(a.status));
+        const availableRooms = DB.rooms.filter(r => r.occ < r.cap && r.status !== 'Maintenance');
+
+        return `
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Approved Applications Awaiting Room Allotment</h3>
+              <span class="badge badge-approved">${approvedApps.length} Ready</span>
+            </div>
+
+            ${renderTable(
+              ['Candidate Scholar', 'Preference', 'Select Room', 'Action'],
+              approvedApps.map(a => [
+                `<strong>${getUserName(a.sid)}</strong>`,
+                `${getHostelName(a.hid)} &bull; ${a.type}`,
+                `<select id="alloc-select-${a.id}">
+                  ${availableRooms.map(r => `
+                    <option value="${r.id}" ${r.hid === a.hid && r.type === a.type ? 'selected' : ''}>
+                      ${getHostelName(r.hid)} &bull; Room ${r.no} (${r.type} &bull; ${r.cap - r.occ} free)
+                    </option>
+                  `).join('')}
+                </select>`,
+                `<button class="btn btn-bronze btn-sm" onclick="executeAllocation(${a.id})"><i class="bi bi-key"></i> Allocate Room</button>`
+              ]),
+              'No approved applications waiting for room allocation.'
+            )}
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Active Room Placements</h3>
+              <span class="badge badge-neutral">${activeAllocs.length} Placed</span>
+            </div>
+
+            ${renderTable(
+              ['Resident Scholar', 'Hostel & Room', 'Allocation Date', 'Status', 'Action'],
+              activeAllocs.map(al => [
+                getUserName(al.sid),
+                getRoomLabel(al.rid),
+                al.date,
+                renderStatusBadge(al.status),
+                `<button class="btn btn-danger-outline btn-sm" onclick="cancelAllocation(${al.id})"><i class="bi bi-x-circle"></i> Cancel & Release Bed</button>`
+              ]),
+              'No active allocations on record.'
+            )}
+          </div>
+        `;
+      },
+
+      // CHECK-IN / CHECK-OUT (WARDEN)
+      checkio() {
+        const list = getWardenScopeAllocs().filter(a => ACTIVE_ALLOC_STATUSES.includes(a.status));
+        return `
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Physical Arrival & Departure Desk</h3>
+            </div>
+            ${renderTable(
+              ['Scholar', 'Room', 'Status', 'Action'],
+              list.map(a => [
+                getUserName(a.sid),
+                getRoomLabel(a.rid),
+                renderStatusBadge(a.status),
+                a.status === 'Allocated'
+                  ? `<button class="btn btn-bronze btn-sm" onclick="processCheckin(${a.id}, 'in')"><i class="bi bi-box-arrow-in-right"></i> Check In</button>`
+                  : `<button class="btn btn-outline btn-sm" onclick="processCheckin(${a.id}, 'out')"><i class="bi bi-box-arrow-right"></i> Check Out (Release Bed)</button>`
+              ]),
+              'No scholars currently placed in your hostel.'
+            )}
+          </div>
+        `;
+      },
+
+      // COMPLAINTS
+      comps() {
+        const isStudent = currentUser.role === 'student';
+        const list = DB.comps.filter(c => {
+          if (isStudent) return c.sid === currentUser.id;
+          if (currentUser.role === 'admin') return true;
+          const userAlloc = getActiveAlloc(c.sid);
+          return (getRoom(userAlloc?.rid) || {}).hid === currentUser.hid;
+        });
+
+        return `
+          <div class="toolbar-bar">
+            ${isStudent ? `
+              <button class="btn btn-bronze btn-sm" onclick="openComplaintDialog()">
+                <i class="bi bi-plus-lg"></i> Lodge New Complaint
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="panel">
+            ${renderTable(
+              ['Subject', 'Student', 'Description', 'Date', 'Status', 'Remarks', isStudent ? '' : 'Action'],
+              list.map(c => [
+                `<strong>${escapeHtml(c.title)}</strong>`,
+                getUserName(c.sid),
+                escapeHtml(c.desc),
+                c.date,
+                renderStatusBadge(c.status),
+                escapeHtml(c.rem || 'Pending review'),
+                isStudent ? '' : `<button class="btn btn-outline btn-sm" onclick="openComplaintUpdateDialog(${c.id})">Update</button>`
+              ]),
+              'No complaints filed.'
+            )}
+          </div>
+        `;
+      },
+
+      // ANNOUNCEMENTS
+      renderAnnouncementsList(limit = 99) {
+        const list = [...DB.anns].reverse().slice(0, limit);
+        if (list.length === 0) return '<div class="empty-state">No announcements published yet.</div>';
+
+        return list.map(a => `
+          <div style="padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+              <strong>${escapeHtml(a.title)}</strong>
+              <span style="font-size: 11px; color: var(--text-muted);">${a.date}</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 6px;">${escapeHtml(a.desc)}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge badge-neutral" style="font-size: 10px;">${a.hid === 0 ? 'Campus Wide' : getHostelName(a.hid)}</span>
+              ${currentUser.role === 'admin' ? `
+                <button class="btn btn-danger-outline btn-sm py-1" onclick="deleteAnnouncement(${a.id})"><i class="bi bi-trash"></i></button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      },
+
+      anns() {
+        return `
+          <div class="toolbar-bar">
+            ${currentUser.role !== 'student' ? `
+              <button class="btn btn-bronze btn-sm" onclick="openAnnouncementDialog()">
+                <i class="bi bi-plus-lg"></i> Publish Announcement
+              </button>
+            ` : ''}
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h3>Official Circulars & Notices</h3></div>
+            ${VIEW_RENDERERS.renderAnnouncementsList()}
+          </div>
+        `;
+      },
+
+      // STUDENT: MY PROFILE
+      profile() {
+        return `
+          <div class="panel" style="max-width: 540px;">
+            <div class="panel-header"><h3>Edit Student Profile</h3></div>
+            <form onsubmit="return handleSaveProfile(event)">
+              <label>Full Name</label>
+              <input name="name" value="${escapeHtml(currentUser.name)}" required>
+
+              <div class="grid-row-2">
+                <div>
+                  <label>Phone Number</label>
+                  <input name="phone" value="${escapeHtml(currentUser.phone)}" required pattern="[0-9]{10}">
+                </div>
+                <div>
+                  <label>Academic Year</label>
+                  <select name="year">
+                    ${[1, 2, 3, 4].map(y => `<option value="${y}" ${currentUser.year === y ? 'selected' : ''}>Year ${y}</option>`).join('')}
+                  </select>
+                </div>
+              </div>
+
+              <label>Department</label>
+              <input name="dept" value="${escapeHtml(currentUser.dept)}" required>
+
+              <label>Registration Number (Read-only)</label>
+              <input value="${escapeHtml(currentUser.reg)}" disabled style="background-color: var(--bg-page);">
+
+              <div style="margin-top: 18px;">
+                <button class="btn btn-bronze">Save Profile</button>
+              </div>
+            </form>
+          </div>
+        `;
+      },
+
+      // STUDENT: APPLY FOR HOSTEL
+      apply() {
+        const activeApp = getActiveApp(currentUser.id);
+        const activeAlloc = getActiveAlloc(currentUser.id);
+
+        return `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <div class="panel">
+                <div class="panel-header"><h3>Submit Accommodation Application</h3></div>
+                ${activeAlloc ? `
+                  <div class="empty-state">You already hold an active room allocation in <strong>${getRoomLabel(activeAlloc.rid)}</strong>.</div>
+                ` : activeApp ? `
+                  <div class="empty-state">You already have an active application (${renderStatusBadge(activeApp.status)}).</div>
+                ` : `
+                  <form onsubmit="return handleApplySubmit(event)">
+                    <label>Select Preferred Hostel</label>
+                    <select name="hid">
+                      ${DB.hostels.map(h => `<option value="${h.id}">${escapeHtml(h.name)} (${h.type})</option>`).join('')}
+                    </select>
+
+                    <label>Preferred Room Configuration</label>
+                    <select name="type" onchange="if(window.student3D) window.student3D.buildMode('room', this.value)">
+                      <option value="Single">Single Sharing</option>
+                      <option value="Double" selected>Double Sharing</option>
+                      <option value="Triple">Triple Sharing</option>
+                      <option value="Dormitory">Dormitory</option>
+                    </select>
+
+                    <div style="margin-top: 18px;">
+                      <button class="btn btn-bronze" style="width: 100%;">Submit Application</button>
+                    </div>
+                  </form>
+                `}
+              </div>
+
+              <div class="panel">
+                <div class="panel-header"><h3>Available Halls Summary</h3></div>
+                ${renderTable(
+                  ['Hostel', 'Type', 'Available Beds'],
+                  DB.hostels.map(h => [
+                    escapeHtml(h.name),
+                    renderStatusBadge(h.type),
+                    DB.rooms.filter(r => r.hid === h.id).reduce((s, r) => s + r.cap - r.occ, 0)
+                  ])
+                )}
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <h3>3D Room Configuration Preview</h3>
+              </div>
+              <div id="apply-3d-box" style="height: 380px; width: 100%; border-radius: 6px; overflow: hidden; background: #ede9df;"></div>
+              <small style="color: var(--text-muted); display: block; margin-top: 8px;">
+                <i class="bi bi-arrows-move me-1"></i> Interactive Three.js model with study desk, bed, and wardrobe.
+              </small>
+            </div>
+          </div>
+        `;
+      },
+
+      apply_post() {
+        const box = $('apply-3d-box');
+        if (box) {
+          window.student3D = new StandaloneHostel3D(box, { mode: 'room', roomType: 'Double' });
+        }
+      },
+
+      // STUDENT: MY APPLICATIONS
+      my_apps() {
+        const apps = DB.apps.filter(a => a.sid === currentUser.id);
+        return `
+          <div class="panel">
+            <div class="panel-header"><h3>Application History</h3></div>
+            ${renderTable(
+              ['Submission Date', 'Hostel', 'Room Type', 'Status', 'Remarks'],
+              apps.map(a => [
+                a.date,
+                getHostelName(a.hid),
+                a.type,
+                renderStatusBadge(a.status),
+                escapeHtml(a.rem || 'Pending administrative review')
+              ]),
+              'No applications submitted yet.'
+            )}
+          </div>
+        `;
+      },
+
+      // STUDENT: MY ROOM (WITH 3D VIEWER)
+      room() {
+        const alloc = getActiveAlloc(currentUser.id);
+        if (!alloc) {
+          return `
+            <div class="panel">
+              <div class="empty-state">
+                <i class="bi bi-door-closed fs-1 d-block mb-2 text-muted"></i>
+                No room currently allocated. Submit a hostel application to get placed.
+              </div>
+            </div>
+          `;
+        }
+
+        const room = getRoom(alloc.rid);
+        return `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="panel">
+              <div class="panel-header"><h3>Room Allotment Details</h3></div>
+              <div style="font-size: 18px; font-weight: 600; margin-bottom: 12px;">
+                ${getHostelName(room.hid)} &bull; Room ${room.no}
+              </div>
+              <div class="grid-row-2 mb-3">
+                <div class="metric-card"><div class="label">Room Type</div><div class="val" style="font-size: 18px;">${room.type}</div></div>
+                <div class="metric-card"><div class="label">Total Beds</div><div class="val" style="font-size: 18px;">${room.cap}</div></div>
+              </div>
+              <div class="metric-card mb-3"><div class="label">Arrival Status</div><div class="val" style="font-size: 18px;">${renderStatusBadge(alloc.status)}</div></div>
+              <small class="text-muted">Allotted on: ${alloc.date}</small>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header"><h3>3D Room Interior</h3></div>
+              <div id="room-3d-box" style="height: 340px; width: 100%; border-radius: 6px; overflow: hidden; background: #ede9df;"></div>
+            </div>
+          </div>
+        `;
+      },
+
+      room_post() {
+        const box = $('room-3d-box');
+        const alloc = getActiveAlloc(currentUser.id);
+        if (box && alloc) {
+          const room = getRoom(alloc.rid);
+          new StandaloneHostel3D(box, { mode: 'room', roomType: room.type });
+        }
+      }
+    };
+
+    /* -------------------------------------------------------------------------
+       6. Operational Mutation Handlers
+       ------------------------------------------------------------------------- */
+    function updateCell(table, id, field, value) {
+      const item = DB[table]?.find(x => x.id === id);
+      if (item) {
+        item[field] = (field === 'cap' || field === 'year') ? +value : value;
+        saveDatabase();
+        showToast('Saved live');
+      }
+    }
+
+    function handleSaveProfile(e) {
+      e.preventDefault();
+      const form = Object.fromEntries(new FormData(e.target));
+      Object.assign(currentUser, form);
+      currentUser.year = +currentUser.year;
+      saveDatabase();
+      showToast('Profile updated successfully.');
+      return false;
+    }
+
+    function handleApplySubmit(e) {
+      e.preventDefault();
+      const form = Object.fromEntries(new FormData(e.target));
+      const hostel = DB.hostels.find(h => h.id == form.hid);
+
+      if ((hostel.type === 'Boys' && currentUser.gender !== 'Male') ||
+          (hostel.type === 'Girls' && currentUser.gender !== 'Female')) {
+        showToast('Selected hostel is reserved for other genders.', true);
+        return false;
+      }
+
+      DB.apps.push({
+        id: nextId(DB.apps),
+        sid: currentUser.id,
+        hid: +form.hid,
+        type: form.type,
+        date: getTodayDate(),
+        status: 'Pending',
+        rem: ''
+      });
+      saveDatabase();
+      showToast('Application submitted successfully!');
+      navigateTo('my_apps');
+      return false;
+    }
+
+    function decideApplication(appId, decision) {
+      showDialogForm(
+        `${decision} Application`,
+        [{ name: 'rem', label: 'Remarks / Reasoning', value: '', type: 'textarea' }],
+        data => {
+          const app = DB.apps.find(a => a.id === appId);
+          app.status = decision;
+          app.rem = data.rem;
+        },
+        decision
+      );
+    }
+
+    function executeAllocation(appId) {
+      const select = $(`alloc-select-${appId}`);
+      if (!select) return;
+      const err = allocateStudentRoom(appId, select.value);
+      if (err) showToast(err, true);
+      else {
+        saveDatabase();
+        showToast('Room successfully allocated!');
+        navigateTo('alloc');
+      }
+    }
+
+    function cancelAllocation(allocId) {
+      confirmAction('Cancel this allocation and release the bed back to room capacity?', () => {
+        const alloc = DB.allocs.find(a => a.id === allocId);
+        releaseRoomBed(alloc, 'Cancelled');
+        const app = DB.apps.find(a => a.id === alloc.aid);
+        if (app) app.status = 'Approved';
+      });
+    }
+
+    function processCheckin(allocId, action) {
+      const alloc = DB.allocs.find(a => a.id === allocId);
+      if (action === 'in') {
+        alloc.status = 'Checked-In';
+        alloc.in = getTodayDate();
+        showToast('Student checked in.');
+      } else {
+        releaseRoomBed(alloc, 'Checked-Out');
+        showToast('Student checked out and bed released.');
+      }
+      saveDatabase();
+      navigateTo(currentView);
+    }
+
+    function deleteStudentRecord(sid) {
+      confirmAction('Delete student account? Active allocations and records will be purged.', () => {
+        const active = getActiveAlloc(sid);
+        if (active) releaseRoomBed(active, 'Cancelled');
+        DB.users = DB.users.filter(u => u.id !== sid);
+        DB.apps = DB.apps.filter(a => a.sid !== sid);
+        DB.allocs = DB.allocs.filter(a => a.sid !== sid);
+        DB.comps = DB.comps.filter(c => c.sid !== sid);
+      });
+    }
+
+    function openHostelDialog(hid) {
+      const h = DB.hostels.find(x => x.id === hid) || { name: '', type: 'Boys', addr: '', desc: '' };
+      showDialogForm(
+        hid ? 'Edit Hostel' : 'Add New Hostel',
+        [
+          { name: 'name', label: 'Hostel Name', value: h.name, required: true },
+          { name: 'type', label: 'Type', value: h.type, options: ['Boys', 'Girls', 'Co-ed'] },
+          { name: 'addr', label: 'Campus Address', value: h.addr, required: true },
+          { name: 'desc', label: 'Description', value: h.desc, type: 'textarea' }
+        ],
+        data => {
+          if (DB.hostels.some(x => x.name.toLowerCase() === data.name.trim().toLowerCase() && x.id !== hid)) {
+            return 'A hostel with this name already exists.';
+          }
+          if (hid) Object.assign(h, data);
+          else DB.hostels.push({ id: nextId(DB.hostels), ...data });
+        }
+      );
+    }
+
+    function deleteHostelBlock(hid) {
+      confirmAction('Delete hostel and all its configured rooms?', () => {
+        if (DB.rooms.some(r => r.hid === hid && r.occ > 0)) {
+          return 'Cannot delete: scholars are currently allocated in this hostel.';
+        }
+        DB.rooms = DB.rooms.filter(r => r.hid !== hid);
+        DB.hostels = DB.hostels.filter(h => h.id !== hid);
+      });
+    }
+
+    function openRoomDialog(rid) {
+      const r = DB.rooms.find(x => x.id === rid) || { hid: DB.hostels[0]?.id, no: '', type: 'Double', cap: 2, status: 'Available' };
+      showDialogForm(
+        rid ? 'Edit Room' : 'Add Room',
+        [
+          { name: 'hid', label: 'Hostel', value: r.hid, options: DB.hostels.map(h => [h.id, h.name]) },
+          { name: 'no', label: 'Room Number', value: r.no, required: true },
+          { name: 'type', label: 'Room Type', value: r.type, options: ['Single', 'Double', 'Triple', 'Dormitory'] },
+          { name: 'cap', label: 'Bed Capacity', value: r.cap, type: 'number', required: true },
+          { name: 'status', label: 'Status', value: r.status, options: ['Available', 'Maintenance'] }
+        ],
+        data => {
+          data.hid = +data.hid;
+          data.cap = +data.cap;
+          if (rid && data.cap < r.occ) return 'Capacity cannot be less than current occupancy.';
+          if (DB.rooms.some(x => x.hid === data.hid && x.no === data.no.trim() && x.id !== rid)) {
+            return 'Room number already exists in this hostel.';
+          }
+          data.no = data.no.trim();
+          if (rid) Object.assign(r, data);
+          else DB.rooms.push({ id: nextId(DB.rooms), occ: 0, ...data });
+        }
+      );
+    }
+
+    function deleteRoomItem(rid) {
+      confirmAction('Delete this room?', () => {
+        if (getRoom(rid).occ > 0) return 'Cannot delete an occupied room.';
+        DB.rooms = DB.rooms.filter(r => r.id !== rid);
+      });
+    }
+
+    function openComplaintDialog() {
+      showDialogForm(
+        'Lodge Maintenance Ticket',
+        [
+          { name: 'title', label: 'Issue Title', value: '', required: true },
+          { name: 'desc', label: 'Detailed Description', value: '', type: 'textarea', required: true }
+        ],
+        data => {
+          DB.comps.push({
+            id: nextId(DB.comps),
+            sid: currentUser.id,
+            title: data.title.trim(),
+            desc: data.desc.trim(),
+            date: getTodayDate(),
+            status: 'Open',
+            rem: ''
+          });
+        },
+        'Submit Ticket'
+      );
+    }
+
+    function openComplaintUpdateDialog(cid) {
+      const c = DB.comps.find(x => x.id === cid);
+      showDialogForm(
+        'Update Ticket',
+        [
+          { name: 'status', label: 'Resolution Status', value: c.status, options: ['Open', 'In Progress', 'Resolved', 'Closed'] },
+          { name: 'rem', label: 'Remarks / Action Taken', value: c.rem || '', type: 'textarea' }
+        ],
+        data => { Object.assign(c, data); }
+      );
+    }
+
+    function openAnnouncementDialog() {
+      showDialogForm(
+        'Publish Notice',
+        [
+          { name: 'title', label: 'Notice Title', value: '', required: true },
+          { name: 'desc', label: 'Message Details', value: '', type: 'textarea', required: true }
+        ],
+        data => {
+          DB.anns.push({
+            id: nextId(DB.anns),
+            title: data.title.trim(),
+            desc: data.desc.trim(),
+            date: getTodayDate(),
+            hid: currentUser.role === 'warden' ? currentUser.hid : 0
+          });
+        },
+        'Publish'
+      );
+    }
+
+    function deleteAnnouncement(aid) {
+      confirmAction('Delete this announcement?', () => {
+        DB.anns = DB.anns.filter(a => a.id !== aid);
+      });
+    }
+
+    /* -------------------------------------------------------------------------
+       7. Three.js Architectural 3D Simulation Class
+       ------------------------------------------------------------------------- */
+    class StandaloneHostel3D {
+      constructor(container, options = {}) {
+        this.container = container;
+        this.options = Object.assign({ mode: 'building', roomType: 'Double' }, options);
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+        this.controls = null;
+        this.group = null;
+        this.init();
+      }
+
+      init() {
+        const w = this.container.clientWidth || 400;
+        const h = this.container.clientHeight || 240;
+
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xF4F1E9);
+
+        this.camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 500);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(w, h);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.container.innerHTML = '';
+        this.container.appendChild(this.renderer.domElement);
+
+        if (typeof THREE.OrbitControls !== 'undefined') {
+          this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+          this.controls.enableDamping = true;
+          this.controls.dampingFactor = 0.05;
+        }
+
+        // Lighting
+        const amb = new THREE.AmbientLight(0xfff8ee, 0.8);
+        this.scene.add(amb);
+        const sun = new THREE.DirectionalLight(0xfff1dc, 1.2);
+        sun.position.set(20, 30, 20);
+        this.scene.add(sun);
+
+        this.buildMode(this.options.mode, this.options.roomType);
+        this.animate();
+      }
+
+      buildMode(mode, sub) {
+        if (this.group) this.scene.remove(this.group);
+        this.group = new THREE.Group();
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xF4F1E9, roughness: 0.6 });
+        const bronzeMat = new THREE.MeshStandardMaterial({ color: 0xA68A64, roughness: 0.4 });
+        const darkMat = new THREE.MeshStandardMaterial({ color: 0x202725, roughness: 0.5 });
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0x3d4b47, roughness: 0.2 });
+
+        if (mode === 'building') {
+          // Central Building Wing
+          const bldg = new THREE.Mesh(new THREE.BoxGeometry(14, 8, 8), wallMat);
+          bldg.position.set(0, 4, 0);
+          this.group.add(bldg);
+
+          // Bronze Parapet Trim
+          const trim = new THREE.Mesh(new THREE.BoxGeometry(14.4, 0.3, 8.4), bronzeMat);
+          trim.position.set(0, 8.15, 0);
+          this.group.add(trim);
+
+          // Portico
+          const port = new THREE.Mesh(new THREE.BoxGeometry(6, 0.3, 3), darkMat);
+          port.position.set(0, 3, 5);
+          this.group.add(port);
+
+          // Window row
+          for (let i = 0; i < 4; i++) {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 0.1), glassMat);
+            win.position.set(-4.5 + i * 3, 5, 4.05);
+            this.group.add(win);
+          }
+
+          this.camera.position.set(18, 14, 20);
+          if (this.controls) this.controls.target.set(0, 4, 0);
+        } else {
+          // Room Mode
+          const floor = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 10), new THREE.MeshStandardMaterial({ color: 0xd6cbb8 }));
+          floor.position.set(0, -0.1, 0);
+          this.group.add(floor);
+
+          const back = new THREE.Mesh(new THREE.BoxGeometry(12, 5, 0.2), wallMat);
+          back.position.set(0, 2.5, -5);
+          this.group.add(back);
+
+          // Beds
+          const numBeds = sub === 'Single' ? 1 : sub === 'Triple' ? 3 : 2;
+          for (let i = 0; i < numBeds; i++) {
+            const bx = -3.5 + i * 3.5;
+            const bed = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.6, 5), darkMat);
+            bed.position.set(bx, 0.3, -1.8);
+            this.group.add(bed);
+
+            const desk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.1, 1.2), bronzeMat);
+            desk.position.set(bx, 1.6, 2.8);
+            this.group.add(desk);
+          }
+
+          this.camera.position.set(9, 8, 10);
+          if (this.controls) this.controls.target.set(0, 1.5, 0);
+        }
+
+        this.scene.add(this.group);
+        if (this.controls) this.controls.update();
+      }
+
+      animate() {
+        requestAnimationFrame(() => this.animate());
+        if (this.controls) this.controls.update();
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    /* Initialize Auth Landing 3D Viewer on DOM Load */
+    document.addEventListener('DOMContentLoaded', () => {
+      const authBox = $('auth-3d-viewport');
+      if (authBox) {
+        new StandaloneHostel3D(authBox, { mode: 'building' });
+      }
+    });
+  </script>
+</body>
+</html>

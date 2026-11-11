@@ -1,0 +1,245 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Administrative Dashboard{% endblock %}
+{% block page_subtitle %}Live residential operations, room allocations, occupancy analytics and system governance{% endblock %}
+
+{% block content %}
+<!-- 10 Metric Cards -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-label"><span>Students</span><i class="bi bi-people"></i></div>
+    <div class="metric-val">{{ total_students }}</div>
+    <div class="metric-sub">Registered scholars</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Hostels</span><i class="bi bi-buildings"></i></div>
+    <div class="metric-val">{{ total_hostels }}</div>
+    <div class="metric-sub">Active halls</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Total Rooms</span><i class="bi bi-door-open"></i></div>
+    <div class="metric-val">{{ total_rooms }}</div>
+    <div class="metric-sub">Configured units</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Bed Capacity</span><i class="bi bi-hdd-stack"></i></div>
+    <div class="metric-val">{{ total_capacity }}</div>
+    <div class="metric-sub">Maximum capacity</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Occupied Beds</span><i class="bi bi-person-check"></i></div>
+    <div class="metric-val text-primary" style="color: var(--accent-bronze) !important;">{{ occupied_beds }}</div>
+    <div class="metric-sub">Resident scholars</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Available Beds</span><i class="bi bi-check-circle"></i></div>
+    <div class="metric-val text-success">{{ available_beds }}</div>
+    <div class="metric-sub">Free for allocation</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Pending Apps</span><i class="bi bi-clock-history"></i></div>
+    <div class="metric-val text-warning">{{ pending_apps }}</div>
+    <div class="metric-sub">Awaiting decision</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Approved</span><i class="bi bi-check2-all"></i></div>
+    <div class="metric-val">{{ approved_apps }}</div>
+    <div class="metric-sub">Awaiting room</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Rejected</span><i class="bi bi-x-circle"></i></div>
+    <div class="metric-val text-danger">{{ rejected_apps }}</div>
+    <div class="metric-sub">Denied requests</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label"><span>Complaints</span><i class="bi bi-chat-left-dots"></i></div>
+    <div class="metric-val text-danger">{{ open_complaints }}</div>
+    <div class="metric-sub">Open maintenance</div>
+  </div>
+</div>
+
+<!-- 3 Chart.js Visualizations -->
+<div class="row g-4 mb-4">
+  <!-- Chart 1: Hostel Occupancy (Bar) -->
+  <div class="col-lg-6">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-bar-chart text-warning" style="color: var(--accent-bronze) !important;"></i> Hostel Occupancy vs Total Capacity</h2>
+        <span class="custom-badge badge-neutral">Live Database Metrics</span>
+      </div>
+      <div style="height: 260px; position: relative;">
+        <canvas id="chart-hostel-occupancy"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 2: Application Breakdown (Doughnut) -->
+  <div class="col-lg-3">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-pie-chart text-warning" style="color: var(--accent-bronze) !important;"></i> Applications</h2>
+      </div>
+      <div style="height: 260px; position: relative;">
+        <canvas id="chart-apps-breakdown"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 3: Room Availability (Doughnut) -->
+  <div class="col-lg-3">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-pie-chart text-warning" style="color: var(--accent-bronze) !important;"></i> Bed Availability</h2>
+      </div>
+      <div style="height: 260px; position: relative;">
+        <canvas id="chart-room-availability"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row: Pending Applications Quick Actions & Audit Trail -->
+<div class="row g-4">
+  <!-- Pending Applications Queue -->
+  <div class="col-lg-7">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-inbox text-warning" style="color: var(--accent-bronze) !important;"></i> Pending Applications Queue</h2>
+        <a href="{{ url_for('admin.applications') }}" class="btn-custom btn-outline-custom btn-sm-custom">View All ({{ pending_apps }})</a>
+      </div>
+
+      {% if recent_pending_apps %}
+        <div class="table-responsive-wrapper">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Preferred Hostel</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in recent_pending_apps %}
+                <tr>
+                  <td>
+                    <span class="fw-semibold">{{ a.student.user.name }}</span>
+                    <small class="text-muted d-block">{{ a.student.registration_number }} &bull; {{ a.student.gender }}</small>
+                  </td>
+                  <td>{{ a.preferred_hostel.hostel_name }}</td>
+                  <td>{{ a.preferred_room_type }}</td>
+                  <td>{{ a.application_date.strftime('%b %d, %Y') }}</td>
+                  <td>
+                    <div class="d-flex gap-1">
+                      <form method="POST" action="{{ url_for('admin.decide_application', app_id=a.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="Approved">
+                        <input type="hidden" name="admin_remarks" value="Approved by Dean">
+                        <button type="submit" class="btn-custom btn-bronze btn-sm-custom py-1 px-2">Approve</button>
+                      </form>
+
+                      <form method="POST" action="{{ url_for('admin.decide_application', app_id=a.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="Rejected">
+                        <input type="hidden" name="admin_remarks" value="Unavailable capacity">
+                        <button type="submit" class="btn-custom btn-danger-outline btn-sm-custom py-1 px-2">Reject</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-4 text-muted small">No pending accommodation requests.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Audit Trail / Activity Logs -->
+  <div class="col-lg-5">
+    <div class="content-panel h-100">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-clock-history text-warning" style="color: var(--accent-bronze) !important;"></i> Recent Audit Trail</h2>
+        <span class="text-muted small">System Logs</span>
+      </div>
+
+      {% if recent_logs %}
+        <div class="d-flex flex-column gap-2">
+          {% for log in recent_logs %}
+            <div class="d-flex align-items-center justify-content-between p-2 border-bottom" style="border-color: var(--border-color); font-size: 12.5px;">
+              <div>
+                <span class="fw-semibold text-dark">{{ log.action }}</span>
+                <small class="text-muted d-block">{{ log.details }}</small>
+              </div>
+              <span class="text-muted" style="font-size: 11px;">{{ log.created_at.strftime('%H:%M &bull; %b %d') }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-4 text-muted small">No activity logs recorded yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Chart 1: Hostel Occupancy Bar Chart
+  createHostelChart('chart-hostel-occupancy', 'bar', {
+    labels: {{ chart_hostels_labels|tojson }},
+    datasets: [
+      {
+        label: 'Occupied Beds',
+        data: {{ chart_hostels_occupied|tojson }},
+        backgroundColor: '#A68A64',
+        borderRadius: 4
+      },
+      {
+        label: 'Total Capacity',
+        data: {{ chart_hostels_capacity|tojson }},
+        backgroundColor: '#DCE3DC',
+        borderRadius: 4
+      }
+    ]
+  });
+
+  // Chart 2: Application Breakdown
+  createHostelChart('chart-apps-breakdown', 'doughnut', {
+    labels: ['Pending', 'Approved', 'Rejected', 'Allocated'],
+    datasets: [{
+      data: {{ chart_apps_data|tojson }},
+      backgroundColor: ['#8c6a28', '#A68A64', '#B4574B', '#202725'],
+      borderWidth: 2,
+      borderColor: '#FFFFFF'
+    }]
+  });
+
+  // Chart 3: Room Availability
+  createHostelChart('chart-room-availability', 'doughnut', {
+    labels: ['Occupied Beds', 'Available Beds'],
+    datasets: [{
+      data: [{{ occupied_beds }}, {{ available_beds }}],
+      backgroundColor: ['#A68A64', '#DCE3DC'],
+      borderWidth: 2,
+      borderColor: '#FFFFFF'
+    }]
+  });
+});
+</script>
+{% endblock %}
+

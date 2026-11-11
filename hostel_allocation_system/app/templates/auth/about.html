@@ -1,0 +1,65 @@
+{% extends "shared/base.html" %}
+
+{% block title %}About System & Regulations - Hostel Allocation and Management System{% endblock %}
+
+{% block public_content %}
+<div class="container py-5" style="max-width: 900px;">
+  <div class="content-panel p-4 p-md-5 shadow-sm" style="border-radius: var(--radius-lg);">
+    
+    <div class="mb-4 pb-3 border-bottom" style="border-color: var(--border-color);">
+      <span class="custom-badge badge-neutral mb-2">Institutional Charter</span>
+      <h1 class="h2 fw-bold mb-2">Hostel Allocation Guidelines & Regulations</h1>
+      <p class="text-muted" style="font-size: 14px;">Official policies governing accommodation applications, room allotments, and resident responsibilities.</p>
+    </div>
+
+    <div class="mb-5">
+      <h3 class="h5 fw-bold mb-3"><i class="bi bi-shield-check text-warning me-2" style="color: var(--accent-bronze) !important;"></i>1. Allocation Business Logic & Eligibility</h3>
+      <p class="text-secondary" style="line-height: 1.6;">
+        Hostel allotment is governed by computational fairness rules enforced directly by the database architecture:
+      </p>
+      <ul class="text-secondary" style="line-height: 1.7;">
+        <li><strong>Single Active Application:</strong> A student cannot have multiple concurrent accommodation applications. Submitting a new application requires prior resolution of pending requests.</li>
+        <li><strong>Single Active Allocation:</strong> Under no circumstances can a resident hold multiple active room assignments.</li>
+        <li><strong>Strict Capacity Thresholds:</strong> Rooms cannot exceed their designated structural capacities (Single = 1, Double = 2, Triple = 3, Dormitory = 4-6). Database transactions reject over-allocation atomically.</li>
+        <li><strong>Gender Segregated Halls:</strong> Boys halls are strictly reserved for male scholars; Girls halls are restricted to female scholars; Co-ed facilities accommodate registered research scholars.</li>
+        <li><strong>Administrative Verification:</strong> Room allocation requires formal approval by the Dean of Student Affairs before wardens can execute check-in.</li>
+      </ul>
+    </div>
+
+    <div class="mb-5">
+      <h3 class="h5 fw-bold mb-3"><i class="bi bi-door-open text-warning me-2" style="color: var(--accent-bronze) !important;"></i>2. Physical Check-in & Check-out Process</h3>
+      <p class="text-secondary" style="line-height: 1.6;">
+        Once an application is approved and a room allocated:
+      </p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="p-3 border rounded bg-light">
+            <h5 class="fw-semibold mb-1" style="font-size: 13.5px;">Arrival Check-in</h5>
+            <p class="small text-muted mb-0">Scholars report to their hostel warden's office with college ID. The warden marks the student as 'Checked-In' on the live database sheet.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 border rounded bg-light">
+            <h5 class="fw-semibold mb-1" style="font-size: 13.5px;">Term Check-out</h5>
+            <p class="small text-muted mb-0">When vacating or graduating, the warden records the checkout date. This automatically decrements room occupancy and releases the bed.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="h5 fw-bold mb-3"><i class="bi bi-tools text-warning me-2" style="color: var(--accent-bronze) !important;"></i>3. Maintenance & Grievance Redressal</h3>
+      <p class="text-secondary" style="line-height: 1.6;">
+        Scholars can log maintenance tickets (electrical, plumbing, Wi-Fi, carpentry) directly from their student dashboard. Wardens update ticket progress in real-time, providing transparency and accountability.
+      </p>
+    </div>
+
+    <div class="pt-4 border-top text-center" style="border-color: var(--border-color);">
+      <a href="{{ url_for('auth.register') }}" class="btn-custom btn-bronze me-2">Apply for Accommodation</a>
+      <a href="{{ url_for('auth.landing') }}" class="btn-custom btn-outline-custom">Return to Home</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+

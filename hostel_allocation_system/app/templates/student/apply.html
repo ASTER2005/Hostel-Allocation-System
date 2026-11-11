@@ -1,0 +1,136 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Apply for Hostel Accommodation{% endblock %}
+{% block page_title %}Hostel Accommodation Application{% endblock %}
+{% block page_subtitle %}Select your preferred college residential hall and room configuration{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Application Form -->
+  <div class="col-lg-6">
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-pencil-square text-warning" style="color: var(--accent-bronze) !important;"></i> Application Form</h2>
+      </div>
+
+      {% if active_alloc %}
+        <div class="alert alert-info" style="border-radius: var(--radius-sm);">
+          <i class="bi bi-info-circle me-1"></i> You are currently allocated to <strong>{{ active_alloc.room.hostel.hostel_name }} — Room {{ active_alloc.room.room_number }}</strong>. Multi-room allocations are strictly prohibited.
+        </div>
+      {% elif active_app %}
+        <div class="alert alert-warning" style="border-radius: var(--radius-sm);">
+          <i class="bi bi-clock-history me-1"></i> You currently have an active application with status: <strong>{{ active_app.status }}</strong>. You may not submit another application while one is in progress.
+          <div class="mt-2">
+            <a href="{{ url_for('student.applications') }}" class="btn-custom btn-outline-custom btn-sm-custom">View My Application</a>
+          </div>
+        </div>
+      {% else %}
+        <form method="POST" action="{{ url_for('student.apply') }}">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            <label class="form-label-custom">Select Preferred Hostel</label>
+            {{ form.preferred_hostel_id(class="form-select-custom", onchange="updateHostelDetails(this.value)") }}
+            <small class="text-muted d-block mt-1">Hostels listed are filtered by your registered gender ({{ student.gender }}).</small>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label-custom">Select Preferred Room Configuration</label>
+            {{ form.preferred_room_type(class="form-select-custom", id="room-type-select", onchange="update3DRoomType(this.value)") }}
+          </div>
+
+          <div class="p-3 border rounded mb-4 bg-light">
+            <h3 class="h6 fw-semibold mb-2">Notice Regarding Allocation Quotas</h3>
+            <p class="small text-muted mb-0" style="line-height: 1.5;">
+              Room allocation is executed by the Administration based on availability, academic seniority, and merit quotas. Submitting an application places your request in the priority review queue.
+            </p>
+          </div>
+
+          <button type="submit" class="btn-custom btn-bronze w-100 justify-content-center py-2">
+            <i class="bi bi-send"></i> Submit Accommodation Application
+          </button>
+        </form>
+      {% endif %}
+    </div>
+
+    <!-- Available Hostels Summary Cards -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-buildings text-warning" style="color: var(--accent-bronze) !important;"></i> Eligible Residential Halls</h2>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        {% for h in available_hostels %}
+        <div class="p-3 border rounded bg-white">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold">{{ h.hostel_name }}</span>
+            <span class="custom-badge badge-available">{{ h.free_beds }} Beds Free</span>
+          </div>
+          <small class="text-muted d-block mb-1"><i class="bi bi-geo-alt me-1"></i>{{ h.address }}</small>
+          <div class="text-secondary small">{{ h.description }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Room Exploration Visualizer -->
+  <div class="col-lg-6">
+    <div class="content-panel p-2 shadow-sm sticky-top" style="top: 80px;">
+      <div class="p-2 border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--border-color);">
+        <div>
+          <span class="fw-semibold" style="font-size: 13px;">3D Room Configuration Preview</span>
+          <small class="text-muted d-block" id="3d-room-label">Double Sharing Layout</small>
+        </div>
+        <div class="d-flex gap-1">
+          <button class="three-control-btn active" onclick="setPreviewType('Single', this)">Single</button>
+          <button class="three-control-btn" onclick="setPreviewType('Double', this)">Double</button>
+          <button class="three-control-btn" onclick="setPreviewType('Triple', this)">Triple</button>
+        </div>
+      </div>
+
+      <div id="apply-room-3d" class="three-canvas-container" style="height: 380px;">
+        <div class="three-legend-box">
+          <span><i class="bi bi-arrows-move me-1"></i> Orbit</span>
+          <span><i class="bi bi-zoom-in me-1"></i> Zoom</span>
+        </div>
+      </div>
+
+      <div class="p-3 text-muted small" style="font-size: 11.5px; line-height: 1.5;">
+        <i class="bi bi-info-circle me-1"></i> Visual representation of standard furniture: ergonomic student study station, modern wardrobe, hardwood floor, and window sunlight orientation.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let roomViewer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  roomViewer = initHostel3D('apply-room-3d', {
+    mode: 'room',
+    roomType: 'Double',
+    enableAutoRotate: false
+  });
+});
+
+function setPreviewType(type, btn) {
+  if (btn) {
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  document.getElementById('3d-room-label').textContent = type + ' Sharing Layout';
+  const select = document.getElementById('room-type-select');
+  if (select) select.value = type;
+  if (roomViewer) {
+    roomViewer.buildMode('room', type);
+  }
+}
+
+function update3DRoomType(val) {
+  setPreviewType(val, null);
+}
+</script>
+{% endblock %}
+

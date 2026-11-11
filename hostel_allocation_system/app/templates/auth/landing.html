@@ -1,0 +1,188 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Collegiate Residential Services - Home{% endblock %}
+
+{% block public_content %}
+<!-- Hero Section with Architectural Showcase & 3D Interactive Model -->
+<section style="background: linear-gradient(180deg, #FFFFFF 0%, #F4F1E9 100%); padding: 56px 24px 64px; border-bottom: 1px solid var(--border-color);">
+  <div style="max-width: 1200px; margin: 0 auto;" class="row align-items-center gy-5">
+    <div class="col-lg-6">
+      <span class="custom-badge badge-neutral mb-3">
+        <i class="bi bi-mortarboard me-1 text-bronze" style="color: var(--accent-bronze);"></i> Academic Session 2026-27
+      </span>
+      <h1 class="display-5 fw-bold mb-3" style="color: var(--text-main); line-height: 1.15; letter-spacing: -0.02em;">
+        Hostel Allocation & Residential Management
+      </h1>
+      <p class="fs-6 text-muted mb-4" style="line-height: 1.6; max-width: 500px;">
+        A unified digital environment for college hostel applications, transparent room allotment, bed occupancy analytics, and rapid maintenance tracking for students, wardens, and administration.
+      </p>
+
+      <div class="d-flex flex-wrap gap-3 mb-4">
+        <a href="{{ url_for('auth.register') }}" class="btn-custom btn-bronze">
+          <i class="bi bi-pencil-square"></i> Apply for Accommodation
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn-custom btn-charcoal">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In to Portal
+        </a>
+      </div>
+
+      <div class="d-flex gap-4 pt-3 border-top" style="border-color: var(--border-color) !important;">
+        <div>
+          <div class="fs-4 fw-bold" style="color: var(--text-main);">{{ total_students }}+</div>
+          <small class="text-muted text-uppercase" style="font-size: 11px;">Enrolled Scholars</small>
+        </div>
+        <div style="width: 1px; background: var(--border-color);"></div>
+        <div>
+          <div class="fs-4 fw-bold" style="color: var(--text-main);">{{ hostels|length }}</div>
+          <small class="text-muted text-uppercase" style="font-size: 11px;">Residence Halls</small>
+        </div>
+        <div style="width: 1px; background: var(--border-color);"></div>
+        <div>
+          <div class="fs-4 fw-bold" style="color: var(--text-main);">{{ total_capacity }}+</div>
+          <small class="text-muted text-uppercase" style="font-size: 11px;">Bed Capacity</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D Interactive Architectural Exploration Widget -->
+    <div class="col-lg-6">
+      <div class="content-panel p-2 shadow-sm" style="border-radius: var(--radius-lg); background: #FFFFFF;">
+        <div class="d-flex align-items-center justify-content-between p-2 border-bottom" style="border-color: var(--border-color);">
+          <div class="d-flex align-items-center gap-2">
+            <span class="status-dot"></span>
+            <span class="fw-semibold" style="font-size: 12.5px;">Interactive 3D Campus Hall Explorer</span>
+          </div>
+          <div class="d-flex gap-1" id="three-mode-selector">
+            <button class="three-control-btn active" onclick="switch3DMode('building', this)">Exterior</button>
+            <button class="three-control-btn" onclick="switch3DMode('floor', this)">Floor Plan</button>
+            <button class="three-control-btn" onclick="switch3DMode('room', this)">Room View</button>
+          </div>
+        </div>
+
+        <div id="landing-3d-canvas" class="three-canvas-container" style="height: 380px;">
+          <div class="three-legend-box">
+            <span><i class="bi bi-arrows-move me-1"></i> Drag to Orbit</span>
+            <span><i class="bi bi-zoom-in me-1"></i> Scroll to Zoom</span>
+          </div>
+        </div>
+
+        <div class="p-2 d-flex justify-content-between align-items-center text-muted" style="font-size: 11.5px;">
+          <span>Photorealistic Three.js architectural rendering with warm daylight materials.</span>
+          <span class="badge bg-light text-dark border">Double & Single Layouts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Available Hostels Showcase -->
+<section style="padding: 64px 24px; max-width: 1200px; margin: 0 auto;">
+  <div class="text-center mb-5">
+    <span class="custom-badge badge-neutral mb-2">Campus Residential Halls</span>
+    <h2 class="display-6 fw-bold">Explore Our Hostels</h2>
+    <p class="text-muted" style="max-width: 580px; margin: 0 auto;">
+      Safe, inclusive and fully equipped modern residential spaces tailored for academic success and student well-being.
+    </p>
+  </div>
+
+  <div class="row g-4">
+    {% for h in hostels %}
+    <div class="col-md-4">
+      <div class="content-panel h-100 d-flex flex-column" style="border-radius: var(--radius-md);">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h3 class="h5 fw-bold mb-1">{{ h.hostel_name }}</h3>
+            <span class="text-muted" style="font-size: 12px;"><i class="bi bi-geo-alt me-1"></i>{{ h.address }}</span>
+          </div>
+          <span class="custom-badge {{ 'badge-approved' if h.hostel_type == 'Boys' else 'badge-pending' if h.hostel_type == 'Girls' else 'badge-neutral' }}">
+            {{ h.hostel_type }}
+          </span>
+        </div>
+
+        <p class="text-secondary small mb-4 flex-grow-1" style="line-height: 1.5;">
+          {{ h.description or 'Comfortable residential hall with complete facilities, study lounges, and high-speed Wi-Fi.' }}
+        </p>
+
+        <div class="pt-3 border-top" style="border-color: var(--border-color);">
+          <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 12.5px;">
+            <span class="text-muted">Total Rooms:</span>
+            <span class="fw-semibold">{{ h.total_rooms }} Rooms</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3" style="font-size: 12.5px;">
+            <span class="text-muted">Beds Available:</span>
+            <span class="fw-semibold text-success">{{ h.free_beds }} Available</span>
+          </div>
+
+          <a href="{{ url_for('auth.register') }}" class="btn-custom btn-outline-custom w-100 justify-content-center btn-sm-custom">
+            Apply for {{ h.hostel_name }}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Structured 4-Step Allocation Process -->
+<section style="background-color: #FFFFFF; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 64px 24px;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div class="text-center mb-5">
+      <span class="custom-badge badge-neutral mb-2">Transparent Procedure</span>
+      <h2 class="display-6 fw-bold">How Accommodation Allotment Works</h2>
+      <p class="text-muted">Strict adherence to capacity constraints, gender separation rules, and administrative merit review.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="p-3 text-center">
+          <div style="width: 48px; height: 48px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 600; color: var(--accent-bronze);">1</div>
+          <h4 class="h6 fw-bold mb-2">Student Registration</h4>
+          <p class="text-muted small">Register with your college roll number and departmental details.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 text-center">
+          <div style="width: 48px; height: 48px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 600; color: var(--accent-bronze);">2</div>
+          <h4 class="h6 fw-bold mb-2">Submit Preferences</h4>
+          <p class="text-muted small">Browse available hostels and pick preferred Single, Double, or Triple room.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 text-center">
+          <div style="width: 48px; height: 48px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 600; color: var(--accent-bronze);">3</div>
+          <h4 class="h6 fw-bold mb-2">Admin Approval</h4>
+          <p class="text-muted small">Dean reviews application against eligibility and room quotas.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 text-center">
+          <div style="width: 48px; height: 48px; background: var(--bg-page); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-weight: 600; color: var(--accent-bronze);">4</div>
+          <h4 class="h6 fw-bold mb-2">Room Allocation & Check-in</h4>
+          <p class="text-muted small">Room assigned with live key allocation; warden records on-site check-in.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let viewer = null;
+document.addEventListener('DOMContentLoaded', () => {
+  viewer = initHostel3D('landing-3d-canvas', {
+    mode: 'building',
+    enableAutoRotate: true
+  });
+});
+
+function switch3DMode(mode, btn) {
+  document.querySelectorAll('#three-mode-selector button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (viewer) {
+    viewer.buildMode(mode);
+  }
+}
+</script>
+{% endblock %}
+
