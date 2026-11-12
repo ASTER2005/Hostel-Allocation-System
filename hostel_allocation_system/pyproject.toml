@@ -1,3 +1,5 @@
 [tool.vercel]
-entrypoint = "run:app"
+entrypoint = "api/index:app"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]

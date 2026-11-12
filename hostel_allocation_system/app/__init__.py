@@ -45,10 +45,15 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(warden_bp, url_prefix="/warden")
 
-    # Auto-create all tables on first request (safe for SQLite on Vercel /tmp).
-    # For MySQL in production, run a proper migration instead.
+    # Auto-create all tables and seed demo data if the DB is empty.
+    # Safe for SQLite on Vercel /tmp; for MySQL set DATABASE_URL and seed manually.
     with app.app_context():
         db.create_all()
+        try:
+            from app.seed_demo import auto_seed_if_empty
+            auto_seed_if_empty(app, db)
+        except Exception as exc:
+            app.logger.warning(f"[seed] Skipped auto-seed: {exc}")
 
     # Error Handlers
     @app.errorhandler(403)

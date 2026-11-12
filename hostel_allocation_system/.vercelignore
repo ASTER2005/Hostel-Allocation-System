@@ -1,0 +1,16 @@
+# Exclude files that must not be bundled into the Vercel Lambda
+.git
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.sqlite3
+instance/
+tests/
+seed.py
+database/
+.env
+.env.example
+README.md
+Hostel Allocation and Management System.html
+
