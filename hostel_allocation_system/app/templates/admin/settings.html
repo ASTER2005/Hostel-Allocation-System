@@ -1,0 +1,197 @@
+{% extends "shared/base.html" %}
+
+{% block title %}System Settings & Configuration{% endblock %}
+{% block page_title %}Institutional System Settings{% endblock %}
+{% block page_subtitle %}Manage academic term configuration, intake status, operational rules, and audit logs{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Left Column: Settings Form -->
+  <div class="col-lg-8">
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-gear-wide-connected text-warning" style="color: var(--accent-bronze) !important;"></i> Institutional Preferences</h2>
+        <span class="custom-badge badge-neutral"><i class="bi bi-database me-1"></i> Engine: {{ db_engine }}</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('admin.settings') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row g-3">
+          <!-- Institution Name -->
+          <div class="col-12">
+            <label class="form-label-custom">{{ form.institution_name.label.text }}</label>
+            {{ form.institution_name(class="form-control-custom", placeholder="e.g. National College of Engineering & Technology") }}
+            {% if form.institution_name.errors %}
+              <div class="text-danger small mt-1">{{ form.institution_name.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Academic Year and Intake Status -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.academic_year.label.text }}</label>
+            {{ form.academic_year(class="form-control-custom", placeholder="e.g. 2026-2027") }}
+            {% if form.academic_year.errors %}
+              <div class="text-danger small mt-1">{{ form.academic_year.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.intake_status.label.text }}</label>
+            {{ form.intake_status(class="form-select-custom") }}
+            <small class="text-muted d-block mt-1">Controls whether students can submit new accommodation applications.</small>
+            {% if form.intake_status.errors %}
+              <div class="text-danger small mt-1">{{ form.intake_status.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Curfew Hours -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.curfew_hours.label.text }}</label>
+            {{ form.curfew_hours(class="form-control-custom", placeholder="e.g. 10:00 PM") }}
+            {% if form.curfew_hours.errors %}
+              <div class="text-danger small mt-1">{{ form.curfew_hours.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Complaint SLA -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.complaint_sla_days.label.text }}</label>
+            {{ form.complaint_sla_days(class="form-control-custom", type="number", min="1", max="30") }}
+            <small class="text-muted d-block mt-1">Target number of days for complaint resolution.</small>
+            {% if form.complaint_sla_days.errors %}
+              <div class="text-danger small mt-1">{{ form.complaint_sla_days.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Contact Email -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.contact_email.label.text }}</label>
+            {{ form.contact_email(class="form-control-custom", placeholder="residential@college.edu") }}
+            {% if form.contact_email.errors %}
+              <div class="text-danger small mt-1">{{ form.contact_email.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Emergency Phone -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.emergency_phone.label.text }}</label>
+            {{ form.emergency_phone(class="form-control-custom", placeholder="+91 (080) 2855-4300") }}
+            {% if form.emergency_phone.errors %}
+              <div class="text-danger small mt-1">{{ form.emergency_phone.errors[0] }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Max Room Transfers -->
+          <div class="col-md-6">
+            <label class="form-label-custom">{{ form.max_room_transfers.label.text }}</label>
+            {{ form.max_room_transfers(class="form-control-custom", type="number", min="0", max="5") }}
+            <small class="text-muted d-block mt-1">Maximum room transfer or reassignment requests a student may submit per term.</small>
+            {% if form.max_room_transfers.errors %}
+              <div class="text-danger small mt-1">{{ form.max_room_transfers.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          {{ form.submit(class="btn-custom btn-bronze") }}
+          <a href="{{ url_for('admin.overview') }}" class="btn-custom btn-outline-custom">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Database Statistics Panel -->
+    <div class="content-panel mt-4">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-bar-chart-steps text-warning" style="color: var(--accent-bronze) !important;"></i> Live Database Statistics</h2>
+      </div>
+      <div class="row g-3">
+        {% set stat_items = [
+          ('Users', stats.users, 'bi-person-circle', '#A68A64'),
+          ('Students', stats.students, 'bi-mortarboard', '#202725'),
+          ('Wardens', stats.wardens, 'bi-person-badge', '#777A73'),
+          ('Hostels', stats.hostels, 'bi-building', '#A68A64'),
+          ('Rooms', stats.rooms, 'bi-door-open', '#202725'),
+          ('Applications', stats.applications, 'bi-file-earmark-text', '#777A73'),
+          ('Allocations', stats.allocations, 'bi-key', '#A68A64'),
+          ('Complaints', stats.complaints, 'bi-chat-left-dots', '#B4574B'),
+          ('Announcements', stats.announcements, 'bi-megaphone', '#202725'),
+        ] %}
+        {% for label, count, icon, color in stat_items %}
+        <div class="col-6 col-md-4">
+          <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; display: flex; align-items: center; gap: 12px;">
+            <i class="bi {{ icon }}" style="font-size: 24px; color: {{ color }};"></i>
+            <div>
+              <div style="font-size: 22px; font-weight: 700; color: var(--charcoal); line-height: 1;">{{ count }}</div>
+              <div style="font-size: 12px; color: var(--secondary-text); text-transform: uppercase; letter-spacing: 0.05em;">{{ label }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Activity Log & Quick Actions -->
+  <div class="col-lg-4">
+    <!-- Quick Action Cards -->
+    <div class="content-panel mb-4">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-lightning text-warning" style="color: var(--accent-bronze) !important;"></i> Quick Actions</h2>
+      </div>
+      <div class="d-flex flex-column gap-2">
+        <a href="{{ url_for('admin.sheets') }}" class="btn-custom btn-charcoal justify-content-center">
+          <i class="bi bi-table"></i> Open Live Database Sheet
+        </a>
+        <a href="{{ url_for('admin.reports') }}" class="btn-custom btn-outline-custom justify-content-center">
+          <i class="bi bi-bar-chart"></i> Download CSV Reports
+        </a>
+        <a href="{{ url_for('admin.hostels') }}" class="btn-custom btn-outline-custom justify-content-center">
+          <i class="bi bi-building"></i> Manage Hostels
+        </a>
+        <a href="{{ url_for('admin.wardens') }}" class="btn-custom btn-outline-custom justify-content-center">
+          <i class="bi bi-person-badge"></i> Manage Wardens
+        </a>
+        <a href="{{ url_for('admin.announcements') }}" class="btn-custom btn-outline-custom justify-content-center">
+          <i class="bi bi-megaphone"></i> Publish Announcement
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Activity Log -->
+    <div class="content-panel">
+      <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-clock-history text-warning" style="color: var(--accent-bronze) !important;"></i> Recent Activity</h2>
+      </div>
+      {% if recent_logs %}
+        <div class="d-flex flex-column gap-2">
+          {% for log in recent_logs %}
+          <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 2px;">
+            <div style="font-size: 13px; font-weight: 600; color: var(--charcoal);">{{ log.action }}</div>
+            <div style="font-size: 12px; color: var(--secondary-text); margin-top: 2px;">
+              {{ log.details|truncate(72) }}
+            </div>
+            <div style="font-size: 11px; color: #aaa; margin-top: 3px;">
+              <i class="bi bi-clock me-1"></i>
+              {% if log.created_at %}
+                {{ log.created_at.strftime('%b %d, %Y  %H:%M') }}
+              {% else %}
+                —
+              {% endif %}
+              {% if log.user %}
+                &nbsp;·&nbsp; {{ log.user.name }}
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-3" style="color: var(--secondary-text); font-size: 13px;">
+          <i class="bi bi-clipboard-check d-block mb-2 fs-4"></i>No activity recorded yet.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

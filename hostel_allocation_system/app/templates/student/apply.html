@@ -17,6 +17,10 @@
         <div class="alert alert-info" style="border-radius: var(--radius-sm);">
           <i class="bi bi-info-circle me-1"></i> You are currently allocated to <strong>{{ active_alloc.room.hostel.hostel_name }} — Room {{ active_alloc.room.room_number }}</strong>. Multi-room allocations are strictly prohibited.
         </div>
+      {% elif intake_status == "Closed" %}
+        <div class="alert alert-danger" style="border-radius: var(--radius-sm);">
+          <i class="bi bi-lock-fill me-1"></i> <strong>Applications Closed.</strong> Hostel accommodation applications for this academic term are currently closed by the administration. Please check back later or contact the Hostel Office.
+        </div>
       {% elif active_app %}
         <div class="alert alert-warning" style="border-radius: var(--radius-sm);">
           <i class="bi bi-clock-history me-1"></i> You currently have an active application with status: <strong>{{ active_app.status }}</strong>. You may not submit another application while one is in progress.
