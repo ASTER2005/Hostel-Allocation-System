@@ -2,7 +2,6 @@
 import os
 from datetime import datetime
 from flask import Flask, render_template, render_template_string
-from sqlalchemy import create_engine
 from config import Config
 from .extensions import db, login_manager, csrf
 
@@ -10,17 +9,23 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Determine whether primary database (MySQL) is reachable; fallback to SQLite gracefully if needed
-    db_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
-    if db_uri and db_uri.startswith("mysql"):
+    # If the configured URI is MySQL, attempt a quick connectivity probe.
+    # On Vercel (serverless) there is no MySQL unless DATABASE_URL is explicitly
+    # set, so we fall back to SQLite immediately without hanging the cold-start.
+    db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    if db_uri.startswith("mysql"):
         try:
-            # Short timeout test
-            test_engine = create_engine(db_uri, connect_args={"connect_timeout": 1})
+            from sqlalchemy import create_engine, text
+            test_engine = create_engine(
+                db_uri,
+                connect_args={"connect_timeout": 3},
+                pool_timeout=3,
+            )
             with test_engine.connect() as conn:
-                pass
+                conn.execute(text("SELECT 1"))
             test_engine.dispose()
         except Exception:
-            # Fallback to SQLite for zero-friction local execution if MySQL service is inactive
+            # MySQL unreachable → fall back to SQLite
             fallback_uri = app.config.get("SQLITE_FALLBACK_URL")
             app.config["SQLALCHEMY_DATABASE_URI"] = fallback_uri
 
@@ -34,11 +39,16 @@ def create_app(config_class=Config):
     from .student import bp as student_bp
     from .admin import bp as admin_bp
     from .warden import bp as warden_bp
-    
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(student_bp, url_prefix="/student")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(warden_bp, url_prefix="/warden")
+
+    # Auto-create all tables on first request (safe for SQLite on Vercel /tmp).
+    # For MySQL in production, run a proper migration instead.
+    with app.app_context():
+        db.create_all()
 
     # Error Handlers
     @app.errorhandler(403)
