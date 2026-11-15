@@ -49,11 +49,12 @@ def create_app(config_class=Config):
     # Safe for SQLite on Vercel /tmp; for MySQL set DATABASE_URL and seed manually.
     with app.app_context():
         db.create_all()
-        try:
-            from app.seed_demo import auto_seed_if_empty
-            auto_seed_if_empty(app, db)
-        except Exception as exc:
-            app.logger.warning(f"[seed] Skipped auto-seed: {exc}")
+        if not app.config.get("TESTING"):
+            try:
+                from app.seed_demo import auto_seed_if_empty
+                auto_seed_if_empty(app, db)
+            except Exception as exc:
+                app.logger.warning(f"[seed] Skipped auto-seed: {exc}")
 
     # Error Handlers
     @app.errorhandler(403)
