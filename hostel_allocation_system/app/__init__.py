@@ -9,26 +9,6 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # If the configured URI is MySQL, attempt a quick connectivity probe.
-    # On Vercel (serverless) there is no MySQL unless DATABASE_URL is explicitly
-    # set, so we fall back to SQLite immediately without hanging the cold-start.
-    db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
-    if db_uri.startswith("mysql"):
-        try:
-            from sqlalchemy import create_engine, text
-            test_engine = create_engine(
-                db_uri,
-                connect_args={"connect_timeout": 3},
-                pool_timeout=3,
-            )
-            with test_engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            test_engine.dispose()
-        except Exception:
-            # MySQL unreachable → fall back to SQLite
-            fallback_uri = app.config.get("SQLITE_FALLBACK_URL")
-            app.config["SQLALCHEMY_DATABASE_URI"] = fallback_uri
-
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
@@ -45,17 +25,13 @@ def create_app(config_class=Config):
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(warden_bp, url_prefix="/warden")
 
-    # Auto-create all tables and seed demo data if the DB is empty.
-    # Safe for SQLite on Vercel /tmp; for MySQL set DATABASE_URL and seed manually.
+    # Let database failures fail startup visibly instead of deferring them to
+    # requests and returning opaque 500 errors from every route.
     with app.app_context():
-        try:
-            db.create_all()
-            if not app.config.get("TESTING"):
-                from app.seed_demo import auto_seed_if_empty
-                auto_seed_if_empty(app, db)
-        except Exception as exc:
-            app.logger.warning(f"[startup] Database initialization note: {exc}")
-
+        db.create_all()
+        if not app.config.get("TESTING"):
+            from app.seed_demo import auto_seed_if_empty
+            auto_seed_if_empty(app, db)
     # Error Handlers
     @app.errorhandler(403)
     def forbidden(e):

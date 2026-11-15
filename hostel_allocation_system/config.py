@@ -1,32 +1,42 @@
-"""Application configuration.
-
-Zero-configuration Flask application configuration:
-- In-memory database by default: 100% file-free and in RAM.
-  No SQLite files on disk, no permission issues, and zero disk write errors on Vercel/serverless.
-- Automatically seeds all demo data (Admin, Wardens, Students, Rooms, Hostels) into RAM.
-- Cloud DB ready: Simply set DATABASE_URL (MySQL / PostgreSQL) for permanent cloud persistence.
-"""
+"""Application configuration for local development and managed cloud SQL."""
 import os
 from dotenv import load_dotenv
 from sqlalchemy.pool import StaticPool
 
 load_dotenv()
 
-# If DATABASE_URL is set in environment (e.g. Neon, Supabase, TiDB, Railway), use it.
-# Otherwise, use a pure in-memory database with StaticPool (zero disk files, zero permission errors).
-_cloud_db = os.getenv("DATABASE_URL")
-if _cloud_db and _cloud_db.startswith("postgres://"):
-    # SQLAlchemy requires postgresql:// instead of legacy postgres://
-    _cloud_db = _cloud_db.replace("postgres://", "postgresql://", 1)
+def _database_uri():
+    """Resolve a supported SQLAlchemy URL without hiding connection failures."""
+    database_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
+    if not database_url:
+        if os.getenv("VERCEL"):
+            raise RuntimeError(
+                "Set DATABASE_URL (PostgreSQL or MySQL) in Vercel Project Settings "
+                "to use the application with persistent storage."
+            )
+        return "sqlite://"
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    if database_url.startswith("mysql://"):
+        return database_url.replace("mysql://", "mysql+pymysql://", 1)
+    if database_url.startswith(("postgresql+psycopg2://", "mysql+pymysql://", "sqlite:")):
+        return database_url
+    raise RuntimeError("DATABASE_URL must use PostgreSQL (postgresql://) or MySQL (mysql://).")
 
-DATABASE_URI = _cloud_db or "sqlite://"
+
+DATABASE_URI = _database_uri()
+SECRET_KEY = os.getenv("SECRET_KEY")
+if os.getenv("VERCEL") and not SECRET_KEY:
+    raise RuntimeError("Set SECRET_KEY in Vercel Project Settings before deployment.")
 
 
 class Config:
     """Application configuration with zero-config in-memory defaults."""
 
     # Built-in session signing key (no environment variable or API key needed)
-    SECRET_KEY = os.getenv("SECRET_KEY", "college-hostel-system-default-key-2026")
+    SECRET_KEY = SECRET_KEY or "college-hostel-system-default-key-2026"
 
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
 
