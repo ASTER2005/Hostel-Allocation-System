@@ -48,13 +48,13 @@ def create_app(config_class=Config):
     # Auto-create all tables and seed demo data if the DB is empty.
     # Safe for SQLite on Vercel /tmp; for MySQL set DATABASE_URL and seed manually.
     with app.app_context():
-        db.create_all()
-        if not app.config.get("TESTING"):
-            try:
+        try:
+            db.create_all()
+            if not app.config.get("TESTING"):
                 from app.seed_demo import auto_seed_if_empty
                 auto_seed_if_empty(app, db)
-            except Exception as exc:
-                app.logger.warning(f"[seed] Skipped auto-seed: {exc}")
+        except Exception as exc:
+            app.logger.warning(f"[startup] Database initialization note: {exc}")
 
     # Error Handlers
     @app.errorhandler(403)
