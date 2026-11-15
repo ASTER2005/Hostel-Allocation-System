@@ -9,11 +9,9 @@ def _database_uri():
     """Resolve a supported SQLAlchemy URL without hiding connection failures."""
     database_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL")
     if not database_url:
-        if os.getenv("VERCEL"):
-            raise RuntimeError(
-                "Set DATABASE_URL (PostgreSQL or MySQL) in Vercel Project Settings "
-                "to use the application with persistent storage."
-            )
+        # Keep local/demo deployments usable without external credentials.
+        # On serverless hosts this is temporary storage; set DATABASE_URL for
+        # data that must persist between invocations.
         return "sqlite://"
     if database_url.startswith("postgres://"):
         return database_url.replace("postgres://", "postgresql+psycopg2://", 1)
@@ -28,8 +26,6 @@ def _database_uri():
 
 DATABASE_URI = _database_uri()
 SECRET_KEY = os.getenv("SECRET_KEY")
-if os.getenv("VERCEL") and not SECRET_KEY:
-    raise RuntimeError("Set SECRET_KEY in Vercel Project Settings before deployment.")
 
 
 class Config:

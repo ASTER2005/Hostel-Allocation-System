@@ -9,16 +9,17 @@ Flask from `requirements.txt` and serves the app's existing routes and assets.
 
 Configure these in Vercel Project Settings → Environment Variables:
 
-- `DATABASE_URL` (required): a reachable managed PostgreSQL or MySQL database.
+- `DATABASE_URL` (optional): a reachable managed PostgreSQL or MySQL database.
   PostgreSQL URLs beginning `postgres://` or `postgresql://`, and MySQL URLs
   beginning `mysql://`, are normalized to their installed SQLAlchemy drivers.
   Vercel Postgres integrations may expose `POSTGRES_URL`; that is accepted when
   `DATABASE_URL` is not present.
-- `SECRET_KEY` (required): a long random value used to sign Flask sessions.
+- `SECRET_KEY` (recommended): a long random value used to sign Flask sessions.
 
-Do not use SQLite for production persistence on Vercel. Serverless filesystem
-and process memory are temporary. The app creates its schema at startup and
-seeds demo fixtures only when the database is empty.
+Without `DATABASE_URL`, the app uses in-memory SQLite so it can start without
+external database setup. Vercel instances are temporary, so this fallback does
+not preserve data between invocations. The app creates its schema at startup
+and seeds demo fixtures only when the database is empty.
 
 ## Deploy with the Vercel CLI (PowerShell)
 
@@ -28,14 +29,12 @@ Run these commands from the repository root:
 npm install --global vercel
 vercel login
 vercel link
-vercel env add DATABASE_URL production
-vercel env add SECRET_KEY production
 vercel --prod
 ```
 
-At each `vercel env add` prompt, paste the matching value from your managed
-database provider or secret generator. To deploy preview branches, add the same
-variables for the `preview` environment before running `vercel`.
+For persistent production data, add `DATABASE_URL` from your managed database
+provider in Vercel Project Settings. Set `SECRET_KEY` there to keep sessions
+valid across function instances. Preview deployments can use separate values.
 
 To inspect runtime failures after deployment:
 
