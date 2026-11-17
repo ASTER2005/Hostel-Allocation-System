@@ -293,115 +293,9 @@ flowchart LR
 
 ### 6.1 Entity relationship diagram
 
-```mermaid
-erDiagram
-  USERS ||--o| STUDENTS : has_profile
-  USERS ||--o| WARDENS : has_profile
-  HOSTELS ||--o{ ROOMS : contains
-  HOSTELS ||--o{ WARDENS : assigned_to
-  STUDENTS ||--o{ APPLICATIONS : submits
-  HOSTELS ||--o{ APPLICATIONS : preferred_by
-  STUDENTS ||--o{ ALLOCATIONS : receives
-  ROOMS ||--o{ ALLOCATIONS : assigned_for
-  APPLICATIONS ||--o{ ALLOCATIONS : may_produce
-  STUDENTS ||--o{ COMPLAINTS : files
-  HOSTELS o|--o{ COMPLAINTS : scopes
-  USERS ||--o{ ANNOUNCEMENTS : creates
-  HOSTELS o|--o{ ANNOUNCEMENTS : targets
-  USERS o|--o{ ACTIVITY_LOGS : performs
+![Entity relationship diagram](assets/prd/entity_relationship.png)
 
-  USERS {
-    int id PK
-    string name
-    string email UK
-    string password_hash
-    enum role
-    datetime created_at
-  }
-  STUDENTS {
-    int id PK
-    int user_id FK_UK
-    string registration_number UK
-    string phone
-    string department
-    smallint academic_year
-    enum gender
-    string address
-  }
-  WARDENS {
-    int id PK
-    int user_id FK_UK
-    string phone
-    int assigned_hostel_id FK
-  }
-  HOSTELS {
-    int id PK
-    string hostel_name UK
-    enum hostel_type
-    string address
-    int total_rooms
-    text description
-  }
-  ROOMS {
-    int id PK
-    int hostel_id FK
-    string room_number
-    enum room_type
-    smallint capacity
-    smallint occupied_count
-    enum status
-  }
-  APPLICATIONS {
-    int id PK
-    int student_id FK
-    int preferred_hostel_id FK
-    enum preferred_room_type
-    datetime application_date
-    enum status
-    string admin_remarks
-  }
-  ALLOCATIONS {
-    int id PK
-    int student_id FK
-    int room_id FK
-    int application_id FK
-    datetime allocation_date
-    datetime check_in_date
-    datetime check_out_date
-    enum status
-  }
-  COMPLAINTS {
-    int id PK
-    int student_id FK
-    int hostel_id FK
-    string complaint_title
-    text description
-    datetime complaint_date
-    enum status
-    string warden_remarks
-  }
-  ANNOUNCEMENTS {
-    int id PK
-    string title
-    text description
-    int hostel_id FK
-    int created_by FK
-    datetime created_at
-  }
-  ACTIVITY_LOGS {
-    int id PK
-    int user_id FK
-    string action
-    string details
-    datetime created_at
-  }
-  SYSTEM_SETTINGS {
-    int id PK
-    string key UK
-    string value
-    datetime updated_at
-  }
-```
+This ER diagram is embedded as an image so Markdown viewers do not need Mermaid support. Repeated table labels in different panels refer to the same database entity; the relationship cardinalities and complete field descriptions follow below.
 
 ### 6.2 Runtime ORM table summary
 
@@ -419,7 +313,29 @@ erDiagram
 | `activity_logs` / `ActivityLog` | Nullable user FK, action, details, timestamp | Audit/event history for selected key actions; user may be nulled on user deletion |
 | `system_settings` / `SystemSetting` | Unique key, string value, updated timestamp | Key/value settings, including intake status and institution/term settings |
 
-### 6.3 Relationships and deletion semantics
+### 6.3 Relationship cardinalities
+
+The relationship diagram repeats some entity boxes across panels to keep edges readable. Repeated labels refer to the same table. Cardinalities below follow the current ORM foreign keys and nullable/unique declarations.
+
+| Parent / referenced entity | Dependent entity | Cardinality | Implementation detail |
+|---|---|---|---|
+| User | Student | 1 to 0..1 | `students.user_id` is a unique, non-null foreign key |
+| User | Warden | 1 to 0..1 | `wardens.user_id` is a unique, non-null foreign key |
+| Hostel | Room | 1 to 0..* | `rooms.hostel_id`; room number is unique within a hostel |
+| Hostel | Warden | 1 to 0..* | `wardens.assigned_hostel_id` is nullable |
+| Student | Application | 1 to 0..* | `applications.student_id` is non-null |
+| Hostel | Application | 1 to 0..* | `applications.preferred_hostel_id` is non-null |
+| Student | Allocation | 1 to 0..* | `allocations.student_id` is non-null; active allocation limit is route logic in ORM runtime |
+| Room | Allocation | 1 to 0..* | `allocations.room_id` is non-null |
+| Application | Allocation | 1 to 0..* | `allocations.application_id` is nullable and not unique in the ORM |
+| Student | Complaint | 1 to 0..* | `complaints.student_id` is non-null |
+| Hostel | Complaint | 0..1 to 0..* | `complaints.hostel_id` is nullable |
+| User | Announcement | 1 to 0..* | `announcements.created_by` is non-null |
+| Hostel | Announcement | 0..1 to 0..* | `announcements.hostel_id` is nullable; null means global notice |
+| User | ActivityLog | 0..1 to 0..* | `activity_logs.user_id` is nullable |
+| — | SystemSetting | Independent | Key/value row has no foreign-key relationship |
+
+### 6.4 Relationships and deletion semantics
 
 - Deleting a user cascades to its student or warden profile at the ORM/DDL level.
 - Deleting a student cascades to that student's applications, allocations, and complaints in the declared relationships/SQL DDL.
